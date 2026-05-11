@@ -13,6 +13,7 @@ const envSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

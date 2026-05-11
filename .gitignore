@@ -43,3 +43,6 @@ coverage/
 .cache/
 .temp/
 .eslintcache
+
+# Prisma generated client
+apps/api/src/generated/

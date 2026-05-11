@@ -14,6 +14,9 @@ async function start(): Promise<void> {
       app.log.info(`Received ${signal}, shutting down gracefully...`);
       try {
         await app.close();
+        const { disconnectPrisma } = await import('./lib/prisma.js');
+        await disconnectPrisma();
+        app.log.info('Database disconnected');
         process.exit(0);
       } catch (err) {
         app.log.error({ err }, 'Error during shutdown');
