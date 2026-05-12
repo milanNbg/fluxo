@@ -4,7 +4,7 @@ export function HomePage() {
   const { data, isLoading, isError } = useGetHealthQuery();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-white px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-primary-50 to-white px-6">
       <div className="max-w-2xl text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-700">
           <span className="size-2 rounded-full bg-success" />
