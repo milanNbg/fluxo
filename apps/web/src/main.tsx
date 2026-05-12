@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { RouterProvider } from 'react-router/dom';
 import { store } from '@/app/store';
 import { router } from '@/app/router';
+import { AuthInitializer } from '@/features/auth/AuthInitializer';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -15,7 +16,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <AuthInitializer>
+        <RouterProvider router={router} />
+      </AuthInitializer>
     </Provider>
   </StrictMode>,
 );

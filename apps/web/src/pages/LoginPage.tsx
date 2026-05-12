@@ -34,7 +34,7 @@ export function LoginPage() {
   const onSubmit = async (data: LoginUserInput) => {
     try {
       await loginUser(data).unwrap();
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch {
       // Error displayed via RTK Query error state
     }

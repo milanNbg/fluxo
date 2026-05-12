@@ -85,6 +85,13 @@ export const api = createApi({
       },
     }),
 
+    refresh: builder.mutation<AuthResponse, void>({
+      query: () => ({
+        url: '/auth/refresh',
+        method: 'POST',
+      }),
+    }),
+
     me: builder.query<MeResponse, void>({
       query: () => '/auth/me',
       providesTags: ['User'],
@@ -97,6 +104,7 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useLogoutMutation,
+  useRefreshMutation,
   useMeQuery,
   useLazyMeQuery,
 } = api;

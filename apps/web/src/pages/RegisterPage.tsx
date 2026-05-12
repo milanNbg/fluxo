@@ -34,7 +34,7 @@ export function RegisterPage() {
   const onSubmit = async (data: RegisterUserInput) => {
     try {
       await registerUser(data).unwrap();
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch {
       // Error displayed via RTK Query error state
     }
