@@ -20,6 +20,15 @@ export function HomePage() {
           manage budgets, and get intelligent insights — all in one place.
         </p>
 
+        <div className="mb-6 flex justify-center gap-3">
+          <a href="/register" className="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700">
+            Create account
+          </a>
+          <a href="/login" className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+            Sign in
+          </a>
+        </div>
+
         <div className="mb-8 rounded-lg border border-gray-200 bg-white p-4 text-left shadow-sm">
           <div className="mb-2 text-sm font-semibold text-gray-500">
             Backend Status
