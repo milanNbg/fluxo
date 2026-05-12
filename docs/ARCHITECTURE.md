@@ -24,6 +24,12 @@ This document explains the key technology choices made while building Fluxo and 
 
 **Why RTK Query over TanStack Query:** Keeps everything in one store — client state and server state. One mental model, less context switching. Auto-generated React hooks with caching, refetching, and cache invalidation via tags.
 
+### React Hook Form + Zod Resolver
+
+**Why React Hook Form:** Minimal re-renders compared to controlled inputs (uses uncontrolled inputs with refs under the hood). Best-in-class TypeScript support. Industry standard for forms in React in 2026.
+
+**Why Zod resolver:** The same Zod schemas from `@fluxo/shared` validate both frontend forms and backend requests. Change `passwordSchema` once, both layers update. This is the practical payoff of monorepo + shared package.
+
 ### Tailwind CSS 4
 
 **Why Tailwind 4 over Tailwind 3:** New Oxide engine (Rust-based), 5x faster builds, native Vite plugin without PostCSS config, new `@theme` directive for design tokens.
@@ -82,6 +88,46 @@ This is the pattern used by Auth0, Okta, and modern OAuth 2.0 implementations.
 
 **Why per-endpoint config:** Different endpoints have different threat models. Login is high-risk (brute force), refresh is medium-risk (token theft), `/me` and `/logout` don't need rate limiting at all.
 
+## Frontend Authentication
+
+### Auth State in Redux (Memory-Only)
+
+**Why Redux for auth state:** Auth state is accessed across the entire app — header, protected routes, API calls. Redux gives us a single source of truth with type-safe selectors (`selectCurrentUser`, `selectIsAuthenticated`).
+
+**Why memory-only (not localStorage):** The access token lives only in Redux state and is lost on browser refresh. This is intentional. Persisting tokens in localStorage exposes them to XSS attacks. Instead, we rely on the HTTP-only refresh cookie to restore the session on startup.
+
+**The `isInitialized` flag:** When the app first loads, we don't know yet whether the user is authenticated — we need to wait for the refresh attempt. The `isInitialized` flag prevents a "flash of unauthenticated content" where the login page briefly renders before we know the user is signed in.
+
+### Protected Routes Pattern
+
+**Why route guards (`RequireAuth` / `RedirectIfAuthenticated`):** Encapsulates auth logic in a single place. Pages don't have to repeat "if not authenticated, redirect to login" logic. They just render — the guard handles the rest.
+
+**Why preserve the location with `state={{ from: location }}`:** When an unauthenticated user tries to visit `/dashboard/transactions`, they're redirected to `/login`. After successful login, they should land on `/dashboard/transactions`, not `/dashboard`. The `from` state enables this professional UX.
+
+**Why redirect authenticated users away from `/login` and `/register`:** A signed-in user visiting `/login` is confusing. The `RedirectIfAuthenticated` guard automatically sends them to `/dashboard`.
+
+### Session Persistence (AuthInitializer)
+
+**Why initialize auth on app startup:** Browser refresh wipes the in-memory access token. Without re-initialization, the user would have to log in every time they refresh the page. Terrible UX.
+
+**How it works:** On app mount, `AuthInitializer` triggers `POST /auth/refresh`. The browser automatically sends the HTTP-only refresh cookie. If valid, the backend returns a fresh access token and the user data, and we restore the Redux state. If the cookie is expired or missing, the user remains a guest. Either way, `isInitialized` is set to `true`.
+
+This is how Stripe, Vercel, and Notion handle session restoration.
+
+### Automatic Token Refresh with Mutex
+
+**The problem:** Access tokens expire after 15 minutes. When a user makes a request with an expired token, the API returns 401. Without automatic refresh, every page interaction after 15 minutes would fail and force a manual re-login.
+
+**The solution:** A custom RTK Query `baseQuery` wrapper intercepts every 401 response:
+1. Pause the request and check if a refresh is already in progress
+2. If not, acquire a mutex lock and POST to `/auth/refresh`
+3. If refresh succeeds, update Redux state with the new access token and retry the original request
+4. If refresh fails, dispatch `clearCredentials()` — the session is truly over
+
+**Why a mutex:** Without serialization, several simultaneous 401 responses would trigger parallel refresh requests. Token rotation means each request would invalidate the others' refresh tokens, creating a cascade of failures. The mutex ensures only one refresh happens at a time; all other requests wait for it to complete, then retry with the fresh token.
+
+**Why this matters for UX:** The user never sees the 401, the refresh, or the retry. From their perspective, the click "just works" — even though three HTTP requests happened under the hood. This is the level of polish expected in modern SaaS products (Auth0, Stripe Dashboard, Vercel).
+
 ## Infrastructure
 
 ### Docker for Local Postgres
@@ -93,6 +139,12 @@ This is the pattern used by Auth0, Okta, and modern OAuth 2.0 implementations.
 ### Environment Validation with Zod
 
 **Why validate env vars at startup:** Production outages from missing env vars are common and frustrating to debug. Validating with Zod at app startup means the app refuses to boot with bad config — fail fast.
+
+### CORS Preflight Handling
+
+**Why this matters:** When the frontend (port 5173) makes a cross-origin request with credentials (cookies) to the backend (port 3000), the browser first sends an `OPTIONS` preflight request to confirm the server allows the action. The backend must respond with the correct CORS headers, including `Access-Control-Allow-Credentials: true` and the exact origin (not a wildcard, which is forbidden with credentials).
+
+This is standard browser security and cannot be disabled — only correctly handled server-side. In production, frontend and backend are typically on related subdomains (e.g., `app.fluxo.com` and `api.fluxo.com`), so preflight still applies. The configuration is already production-ready.
 
 ## TypeScript Configuration
 
@@ -116,8 +168,9 @@ This is the pattern used by Auth0, Okta, and modern OAuth 2.0 implementations.
 ## What's Next
 
 Future architectural decisions to document as they're made:
-- Frontend auth state management (Redux slice + RTK Query auth endpoints)
-- Protected routes pattern
-- Auto-refresh strategy for expired access tokens
-- AI assistant integration (Anthropic API)
-- Transaction data model with categories and budgets
+- Transaction and Category data models with ownership constraints
+- Optimistic updates for transaction CRUD
+- Recharts integration for dashboard visualizations
+- AI assistant integration (Anthropic API) with streaming responses
+- Internationalization (i18n) strategy
+- Production deployment (Vercel + Railway/Neon)
