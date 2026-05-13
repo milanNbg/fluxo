@@ -1,22 +1,51 @@
 import { useState } from 'react';
-import { useListTransactionsQuery } from '@/app/api';
+import type { Transaction } from '@fluxo/shared';
+import {
+  useListTransactionsQuery,
+  useDeleteTransactionMutation,
+} from '@/app/api';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/Button';
 import { Modal } from '@/components/Modal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { TransactionForm } from '@/features/transactions/TransactionForm';
+import { TransactionActions } from '@/features/transactions/TransactionActions';
 
 export function TransactionsPage() {
   const [page] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] =
+    useState<Transaction | null>(null);
 
   const { data, isLoading, isError } = useListTransactionsQuery({
     page,
     pageSize: 20,
   });
 
+  const [deleteTransaction, { isLoading: isDeleting }] =
+    useDeleteTransactionMutation();
+
   const openAddModal = () => setIsAddModalOpen(true);
   const closeAddModal = () => setIsAddModalOpen(false);
+
+  const handleEdit = (tx: Transaction) => setEditingTransaction(tx);
+  const closeEditModal = () => setEditingTransaction(null);
+
+  const handleDelete = (tx: Transaction) => setDeletingTransaction(tx);
+  const closeDeleteDialog = () => setDeletingTransaction(null);
+
+  const confirmDelete = async () => {
+    if (!deletingTransaction) return;
+    try {
+      await deleteTransaction(deletingTransaction.id).unwrap();
+      closeDeleteDialog();
+    } catch {
+      // Error handling could be improved with toast notifications later
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -119,9 +148,11 @@ export function TransactionsPage() {
                       {tx.type === 'income' ? '+' : '−'}€{Number(tx.amount).toFixed(2)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        ⋯
-                      </button>
+                      <TransactionActions
+                        transaction={tx}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -142,6 +173,36 @@ export function TransactionsPage() {
       >
         <TransactionForm onSuccess={closeAddModal} onCancel={closeAddModal} />
       </Modal>
+
+      <Modal
+        isOpen={editingTransaction !== null}
+        onClose={closeEditModal}
+        title="Edit transaction"
+        description="Update the details below"
+      >
+        {editingTransaction && (
+          <TransactionForm
+            transaction={editingTransaction}
+            onSuccess={closeEditModal}
+            onCancel={closeEditModal}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        isOpen={deletingTransaction !== null}
+        onClose={closeDeleteDialog}
+        onConfirm={confirmDelete}
+        title="Delete transaction?"
+        message={
+          deletingTransaction
+            ? `This will permanently delete the transaction for €${Number(deletingTransaction.amount).toFixed(2)}. This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </DashboardLayout>
   );
 }

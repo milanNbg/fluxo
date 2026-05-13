@@ -1,8 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { transactionTypeSchema } from '@fluxo/shared';
-import { useListCategoriesQuery, useCreateTransactionMutation } from '@/app/api';
+import { transactionTypeSchema, type Transaction } from '@fluxo/shared';
+import {
+  useListCategoriesQuery,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
+} from '@/app/api';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { Button } from '@/components/Button';
@@ -13,7 +17,7 @@ const formSchema = z.object({
     .string()
     .min(1, 'Amount is required')
     .regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount format')
-    .refine((val) => Number.parseFloat(val) > 0, 'Amount must be greater than 0'),
+    .refine((val: string) => Number.parseFloat(val) > 0, 'Amount must be greater than 0'),
   type: transactionTypeSchema,
   description: z.string().max(255, 'Description is too long').optional(),
   date: z
@@ -35,20 +39,32 @@ function getErrorMessage(error: unknown): string {
     const message = err.data?.message;
     if (typeof message === 'string') return message;
   }
-  return 'Failed to create transaction. Please try again.';
+  return 'Failed to save transaction. Please try again.';
 }
 
 interface TransactionFormProps {
+  transaction?: Transaction;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
+export function TransactionForm({
+  transaction,
+  onSuccess,
+  onCancel,
+}: TransactionFormProps) {
+  const isEditMode = Boolean(transaction);
   const today = new Date().toISOString().split('T')[0]!;
+
   const { data: categoriesData, isLoading: isLoadingCategories } =
     useListCategoriesQuery();
-  const [createTransaction, { isLoading: isCreating, error }] =
+  const [createTransaction, { isLoading: isCreating, error: createError }] =
     useCreateTransactionMutation();
+  const [updateTransaction, { isLoading: isUpdating, error: updateError }] =
+    useUpdateTransactionMutation();
+
+  const isSubmitting = isCreating || isUpdating;
+  const error = createError ?? updateError;
 
   const {
     register,
@@ -58,20 +74,36 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     resolver: zodResolver(formSchema),
     mode: 'onBlur',
     defaultValues: {
-      type: 'expense',
-      date: today,
+      type: transaction?.type ?? 'expense',
+      amount: transaction?.amount ?? '',
+      description: transaction?.description ?? '',
+      date: transaction?.date ?? today,
+      categoryId: transaction?.categoryId ?? '',
     },
   });
 
   const onSubmit = async (data: FormInput) => {
     try {
-      await createTransaction({
-        amount: Number.parseFloat(data.amount),
-        type: data.type,
-        description: data.description,
-        date: data.date,
-        categoryId: data.categoryId,
-      }).unwrap();
+      if (isEditMode && transaction) {
+        await updateTransaction({
+          id: transaction.id,
+          input: {
+            amount: Number.parseFloat(data.amount),
+            type: data.type,
+            description: data.description,
+            date: data.date,
+            categoryId: data.categoryId,
+          },
+        }).unwrap();
+      } else {
+        await createTransaction({
+          amount: Number.parseFloat(data.amount),
+          type: data.type,
+          description: data.description,
+          date: data.date,
+          categoryId: data.categoryId,
+        }).unwrap();
+      }
       onSuccess();
     } catch {
       // Error displayed via RTK Query state
@@ -106,7 +138,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
 
       <Select
         label="Category"
-        defaultValue=""
+        defaultValue={transaction?.categoryId ?? ''}
         error={errors.categoryId?.message}
         {...register('categoryId')}
       >
@@ -146,8 +178,8 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
         <Button type="button" variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" isLoading={isCreating}>
-          Add transaction
+        <Button type="submit" isLoading={isSubmitting}>
+          {isEditMode ? 'Save changes' : 'Add transaction'}
         </Button>
       </div>
     </form>
