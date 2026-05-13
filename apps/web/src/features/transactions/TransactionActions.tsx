@@ -60,7 +60,7 @@ export function TransactionActions({
 
       {isOpen && (
         <div
-          className="absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+          className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
           role="menu"
         >
           <button

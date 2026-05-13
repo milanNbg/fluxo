@@ -129,8 +129,9 @@ export function TransactionForm({
 
       <Input
         label="Amount (€)"
-        type="text"
-        inputMode="decimal"
+        type="number"
+        step="0.01"
+        min="0"
         placeholder="0.00"
         error={errors.amount?.message}
         {...register('amount')}

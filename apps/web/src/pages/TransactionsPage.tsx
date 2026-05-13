@@ -90,7 +90,7 @@ export function TransactionsPage() {
         )}
 
         {data && data.transactions.length > 0 && (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="w-full">
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
