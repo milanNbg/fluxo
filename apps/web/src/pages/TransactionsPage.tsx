@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Transaction } from '@fluxo/shared';
 import {
   useListTransactionsQuery,
+  useListCategoriesQuery,
   useDeleteTransactionMutation,
 } from '@/app/api';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -9,24 +10,56 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { Pagination } from '@/components/Pagination';
 import { TransactionForm } from '@/features/transactions/TransactionForm';
 import { TransactionActions } from '@/features/transactions/TransactionActions';
+import {
+  TransactionFilters,
+  initialFilters,
+  type FilterState,
+} from '@/features/transactions/TransactionFilters';
+import { ActiveFilterPills } from '@/features/transactions/ActiveFilterPills';
 
 export function TransactionsPage() {
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [deletingTransaction, setDeletingTransaction] =
     useState<Transaction | null>(null);
 
-  const { data, isLoading, isError } = useListTransactionsQuery({
+  const queryParams = {
     page,
-    pageSize: 20,
-  });
+    pageSize,
+    ...(filters.type && { type: filters.type }),
+    ...(filters.categoryId && { categoryId: filters.categoryId }),
+    ...(filters.startDate && { startDate: filters.startDate }),
+    ...(filters.endDate && { endDate: filters.endDate }),
+    ...(filters.search && { search: filters.search }),
+  };
 
+  const { data, isLoading, isFetching, isError } =
+    useListTransactionsQuery(queryParams);
+  const { data: categoriesData } = useListCategoriesQuery();
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
+
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
+  const handleRemoveFilter = (key: keyof FilterState) => {
+    setFilters({ ...filters, [key]: '' });
+    setPage(1);
+  };
+
+  const handleClearAll = () => {
+    setFilters(initialFilters);
+    setPage(1);
+  };
 
   const openAddModal = () => setIsAddModalOpen(true);
   const closeAddModal = () => setIsAddModalOpen(false);
@@ -47,6 +80,9 @@ export function TransactionsPage() {
     }
   };
 
+  const hasActiveFilters = Object.values(filters).some((v) => v !== '');
+  const categories = categoriesData?.categories ?? [];
+
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-6xl">
@@ -60,6 +96,15 @@ export function TransactionsPage() {
           <Button onClick={openAddModal}>+ Add transaction</Button>
         </div>
 
+        <TransactionFilters filters={filters} onFiltersChange={handleFiltersChange} />
+
+        <ActiveFilterPills
+          filters={filters}
+          categories={categories}
+          onRemove={handleRemoveFilter}
+          onClearAll={handleClearAll}
+        />
+
         {isLoading && (
           <div className="flex justify-center py-16">
             <LoadingSpinner size="lg" />
@@ -72,7 +117,7 @@ export function TransactionsPage() {
           </div>
         )}
 
-        {data && data.transactions.length === 0 && (
+        {data && data.transactions.length === 0 && !hasActiveFilters && (
           <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center">
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary-50 text-3xl">
               💸
@@ -89,8 +134,25 @@ export function TransactionsPage() {
           </div>
         )}
 
+        {data && data.transactions.length === 0 && hasActiveFilters && (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center">
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100 text-3xl">
+              🔍
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              No matching transactions
+            </h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Try adjusting your filters or clearing them to see all transactions.
+            </p>
+            <Button variant="secondary" className="mt-6" onClick={handleClearAll}>
+              Clear all filters
+            </Button>
+          </div>
+        )}
+
         {data && data.transactions.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className={`rounded-xl border border-gray-200 bg-white shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-60' : ''}`}>
             <table className="w-full">
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
@@ -158,9 +220,16 @@ export function TransactionsPage() {
                 ))}
               </tbody>
             </table>
-            <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs text-gray-500">
-              Showing {data.transactions.length} of {data.total} transactions
-            </div>
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              total={data.total}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
           </div>
         )}
       </div>

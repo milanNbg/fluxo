@@ -50,6 +50,12 @@ export async function listTransactions(
     if (filters.startDate) where.date.gte = new Date(filters.startDate);
     if (filters.endDate) where.date.lte = new Date(filters.endDate);
   }
+  if (filters.search) {
+    where.description = {
+      contains: filters.search,
+      mode: 'insensitive',
+    };
+  }
 
   const skip = (filters.page - 1) * filters.pageSize;
 
