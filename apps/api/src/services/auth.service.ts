@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { env } from '../config/env.js';
 import crypto from 'node:crypto';
+import { DEFAULT_CATEGORIES } from '../lib/defaultCategories.js';
 import type {
   RegisterUserInput,
   LoginUserInput,
@@ -95,6 +96,14 @@ export async function registerUser(
       email: input.email,
       passwordHash,
       name: input.name ?? null,
+      categories: {
+        create: DEFAULT_CATEGORIES.map((cat) => ({
+          name: cat.name,
+          icon: cat.icon,
+          color: cat.color,
+          isDefault: true,
+        })),
+      },
     },
   });
 

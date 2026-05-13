@@ -16,6 +16,8 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   refreshTokens RefreshToken[]
+  categories    Category[]
+  transactions  Transaction[]
 
   @@index([email])
   @@map("users")
@@ -33,4 +35,47 @@ model RefreshToken {
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
+}
+
+model Category {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @db.VarChar(50)
+  icon         String?       @db.VarChar(20)
+  color        String?       @db.VarChar(7)
+  userId       String        @map("user_id") @db.Uuid
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  isDefault    Boolean       @default(false) @map("is_default")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id          String          @id @default(uuid()) @db.Uuid
+  amount      Decimal         @db.Decimal(12, 2)
+  type        TransactionType
+  description String?         @db.VarChar(255)
+  date        DateTime        @db.Date
+  userId      String          @map("user_id") @db.Uuid
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String          @map("category_id") @db.Uuid
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([categoryId])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  income
+  expense
+
+  @@map("transaction_type")
 }

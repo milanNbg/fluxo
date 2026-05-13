@@ -8,6 +8,8 @@ import authPlugin from './plugins/auth.js';
 import { loggerConfig } from './config/logger.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
+import { categoryRoutes } from './routes/categories.js';
+import { transactionRoutes } from './routes/transactions.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -54,6 +56,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes, { prefix: '/health' });
   await app.register(authRoutes, { prefix: '/auth' });
+  await app.register(categoryRoutes, { prefix: '/categories' });
+  await app.register(transactionRoutes, { prefix: '/transactions' });
 
   app.setNotFoundHandler((request, reply) => {
     reply.notFound(`Route ${request.method}:${request.url} not found`);
