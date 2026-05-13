@@ -11,6 +11,14 @@ import type {
   MeResponse,
   RegisterUserInput,
   LoginUserInput,
+  Category,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+  Transaction,
+  CreateTransactionInput,
+  UpdateTransactionInput,
+  TransactionListResponse,
+  TransactionFilters,
 } from '@fluxo/shared';
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
@@ -33,10 +41,10 @@ const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
-> = async (args, api, extraOptions) => {
+> = async (args, baseApi, extraOptions) => {
   await mutex.waitForUnlock();
 
-  let result = await baseQuery(args, api, extraOptions);
+  let result = await baseQuery(args, baseApi, extraOptions);
 
   const isAuthEndpoint =
     typeof args !== 'string' &&
@@ -52,29 +60,29 @@ const baseQueryWithReauth: BaseQueryFn<
       try {
         const refreshResult = await baseQuery(
           { url: '/auth/refresh', method: 'POST' },
-          api,
+          baseApi,
           extraOptions,
         );
 
         if (refreshResult.data) {
           const data = refreshResult.data as AuthResponse;
-          api.dispatch(
+          baseApi.dispatch(
             setCredentials({
               user: data.user,
               accessToken: data.tokens.accessToken,
             }),
           );
 
-          result = await baseQuery(args, api, extraOptions);
+          result = await baseQuery(args, baseApi, extraOptions);
         } else {
-          api.dispatch(clearCredentials());
+          baseApi.dispatch(clearCredentials());
         }
       } finally {
         release();
       }
     } else {
       await mutex.waitForUnlock();
-      result = await baseQuery(args, api, extraOptions);
+      result = await baseQuery(args, baseApi, extraOptions);
     }
   }
 
@@ -84,7 +92,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Health', 'User', 'Transaction'],
+  tagTypes: ['Health', 'User', 'Transaction', 'Category'],
   endpoints: (builder) => ({
     getHealth: builder.query<HealthCheckResponse, void>({
       query: () => '/health',
@@ -99,6 +107,7 @@ export const api = createApi({
       }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
+          dispatch(api.util.resetApiState());
           const { data } = await queryFulfilled;
           dispatch(
             setCredentials({
@@ -120,6 +129,7 @@ export const api = createApi({
       }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
+          dispatch(api.util.resetApiState());
           const { data } = await queryFulfilled;
           dispatch(
             setCredentials({
@@ -143,6 +153,7 @@ export const api = createApi({
           await queryFulfilled;
         } finally {
           dispatch(clearCredentials());
+          dispatch(api.util.resetApiState());
         }
       },
     }),
@@ -158,6 +169,92 @@ export const api = createApi({
       query: () => '/auth/me',
       providesTags: ['User'],
     }),
+
+    listCategories: builder.query<{ categories: Category[] }, void>({
+      query: () => '/categories',
+      providesTags: ['Category'],
+    }),
+
+    createCategory: builder.mutation<{ category: Category }, CreateCategoryInput>({
+      query: (input) => ({
+        url: '/categories',
+        method: 'POST',
+        body: input,
+      }),
+      invalidatesTags: ['Category'],
+    }),
+
+    updateCategory: builder.mutation<
+      { category: Category },
+      { id: string; input: UpdateCategoryInput }
+    >({
+      query: ({ id, input }) => ({
+        url: `/categories/${id}`,
+        method: 'PATCH',
+        body: input,
+      }),
+      invalidatesTags: ['Category'],
+    }),
+
+    deleteCategory: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/categories/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Category'],
+    }),
+
+    listTransactions: builder.query<TransactionListResponse, TransactionFilters>({
+      query: (filters) => ({
+        url: '/transactions',
+        params: filters,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.transactions.map(({ id }) => ({
+                type: 'Transaction' as const,
+                id,
+              })),
+              { type: 'Transaction', id: 'LIST' },
+            ]
+          : [{ type: 'Transaction', id: 'LIST' }],
+    }),
+
+    createTransaction: builder.mutation<
+      { transaction: Transaction },
+      CreateTransactionInput
+    >({
+      query: (input) => ({
+        url: '/transactions',
+        method: 'POST',
+        body: input,
+      }),
+      invalidatesTags: [{ type: 'Transaction', id: 'LIST' }],
+    }),
+
+    updateTransaction: builder.mutation<
+      { transaction: Transaction },
+      { id: string; input: UpdateTransactionInput }
+    >({
+      query: ({ id, input }) => ({
+        url: `/transactions/${id}`,
+        method: 'PATCH',
+        body: input,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Transaction', id },
+        { type: 'Transaction', id: 'LIST' },
+      ],
+    }),
+
+    deleteTransaction: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/transactions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Transaction', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -169,4 +266,12 @@ export const {
   useRefreshMutation,
   useMeQuery,
   useLazyMeQuery,
+  useListCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+  useListTransactionsQuery,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
+  useDeleteTransactionMutation,
 } = api;

@@ -1,0 +1,155 @@
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { transactionTypeSchema } from '@fluxo/shared';
+import { useListCategoriesQuery, useCreateTransactionMutation } from '@/app/api';
+import { Input } from '@/components/Input';
+import { Select } from '@/components/Select';
+import { Button } from '@/components/Button';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+
+const formSchema = z.object({
+  amount: z
+    .string()
+    .min(1, 'Amount is required')
+    .regex(/^\d+(\.\d{1,2})?$/, 'Invalid amount format')
+    .refine((val) => Number.parseFloat(val) > 0, 'Amount must be greater than 0'),
+  type: transactionTypeSchema,
+  description: z.string().max(255, 'Description is too long').optional(),
+  date: z
+    .string()
+    .min(1, 'Date is required')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
+  categoryId: z.string().uuid('Please select a category'),
+});
+
+type FormInput = z.infer<typeof formSchema>;
+
+interface FetchBaseQueryError {
+  data?: { message?: string };
+}
+
+function getErrorMessage(error: unknown): string {
+  if (typeof error === 'object' && error !== null && 'data' in error) {
+    const err = error as FetchBaseQueryError;
+    const message = err.data?.message;
+    if (typeof message === 'string') return message;
+  }
+  return 'Failed to create transaction. Please try again.';
+}
+
+interface TransactionFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
+  const today = new Date().toISOString().split('T')[0]!;
+  const { data: categoriesData, isLoading: isLoadingCategories } =
+    useListCategoriesQuery();
+  const [createTransaction, { isLoading: isCreating, error }] =
+    useCreateTransactionMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInput>({
+    resolver: zodResolver(formSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      type: 'expense',
+      date: today,
+    },
+  });
+
+  const onSubmit = async (data: FormInput) => {
+    try {
+      await createTransaction({
+        amount: Number.parseFloat(data.amount),
+        type: data.type,
+        description: data.description,
+        date: data.date,
+        categoryId: data.categoryId,
+      }).unwrap();
+      onSuccess();
+    } catch {
+      // Error displayed via RTK Query state
+    }
+  };
+
+  if (isLoadingCategories) {
+    return (
+      <div className="flex justify-center py-8">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  const categories = categoriesData?.categories ?? [];
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Select label="Type" error={errors.type?.message} {...register('type')}>
+        <option value="expense">💸 Expense</option>
+        <option value="income">💰 Income</option>
+      </Select>
+
+      <Input
+        label="Amount (€)"
+        type="text"
+        inputMode="decimal"
+        placeholder="0.00"
+        error={errors.amount?.message}
+        {...register('amount')}
+      />
+
+      <Select
+        label="Category"
+        defaultValue=""
+        error={errors.categoryId?.message}
+        {...register('categoryId')}
+      >
+        <option value="" disabled>
+          Select a category
+        </option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.icon ? `${cat.icon} ` : ''}
+            {cat.name}
+          </option>
+        ))}
+      </Select>
+
+      <Input
+        label="Date"
+        type="date"
+        error={errors.date?.message}
+        {...register('date')}
+      />
+
+      <Input
+        label="Description (optional)"
+        type="text"
+        placeholder="e.g. Lunch at the office"
+        error={errors.description?.message}
+        {...register('description')}
+      />
+
+      {error && (
+        <div className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
+          {getErrorMessage(error)}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" isLoading={isCreating}>
+          Add transaction
+        </Button>
+      </div>
+    </form>
+  );
+}
