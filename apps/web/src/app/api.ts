@@ -19,6 +19,7 @@ import type {
   UpdateTransactionInput,
   TransactionListResponse,
   TransactionFilters,
+  TransactionStats,
 } from '@fluxo/shared';
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
@@ -204,6 +205,11 @@ export const api = createApi({
       invalidatesTags: ['Category'],
     }),
 
+    getTransactionStats: builder.query<TransactionStats, void>({
+      query: () => '/transactions/stats',
+      providesTags: [{ type: 'Transaction', id: 'STATS' }],
+    }),
+
     listTransactions: builder.query<TransactionListResponse, TransactionFilters>({
       query: (filters) => ({
         url: '/transactions',
@@ -230,7 +236,10 @@ export const api = createApi({
         method: 'POST',
         body: input,
       }),
-      invalidatesTags: [{ type: 'Transaction', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'Transaction', id: 'LIST' },
+        { type: 'Transaction', id: 'STATS' },
+      ],
     }),
 
     updateTransaction: builder.mutation<
@@ -245,6 +254,7 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
+        { type: 'Transaction', id: 'STATS' },
       ],
     }),
 
@@ -253,7 +263,10 @@ export const api = createApi({
         url: `/transactions/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: [{ type: 'Transaction', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'Transaction', id: 'LIST' },
+        { type: 'Transaction', id: 'STATS' },
+      ],
     }),
   }),
 });
@@ -274,4 +287,5 @@ export const {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
+  useGetTransactionStatsQuery,
 } = api;

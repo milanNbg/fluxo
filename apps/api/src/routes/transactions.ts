@@ -10,9 +10,19 @@ import {
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  getTransactionStats,
 } from '../services/transaction.service.js';
 
 export const transactionRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    '/stats',
+    { onRequest: [fastify.authenticate] },
+    async (request) => {
+      const stats = await getTransactionStats(request.user.sub);
+      return stats;
+    },
+  );
+  
   fastify.get(
     '/',
     { onRequest: [fastify.authenticate] },

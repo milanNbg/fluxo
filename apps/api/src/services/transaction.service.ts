@@ -176,3 +176,107 @@ export async function deleteTransaction(
 
   await prisma.transaction.delete({ where: { id: transactionId } });
 }
+
+export async function getTransactionStats(
+  userId: string,
+): Promise<{
+  totalBalance: string;
+  totalIncome: string;
+  totalExpense: string;
+  monthlyIncome: string;
+  monthlyExpense: string;
+  monthlyBalance: string;
+  transactionCount: number;
+  expenseBreakdown: Array<{
+    categoryId: string;
+    categoryName: string;
+    categoryIcon: string | null;
+    categoryColor: string | null;
+    total: string;
+    percentage: number;
+    transactionCount: number;
+  }>;
+}> {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  const allTransactions = await prisma.transaction.findMany({
+    where: { userId },
+    include: { category: true },
+  });
+
+  let totalIncome = new Prisma.Decimal(0);
+  let totalExpense = new Prisma.Decimal(0);
+  let monthlyIncome = new Prisma.Decimal(0);
+  let monthlyExpense = new Prisma.Decimal(0);
+
+  const categoryTotals = new Map<
+    string,
+    {
+      total: Prisma.Decimal;
+      categoryName: string;
+      categoryIcon: string | null;
+      categoryColor: string | null;
+      transactionCount: number;
+    }
+  >();
+
+  for (const tx of allTransactions) {
+    const isMonthly = tx.date >= startOfMonth && tx.date < startOfNextMonth;
+
+    if (tx.type === 'income') {
+      totalIncome = totalIncome.plus(tx.amount);
+      if (isMonthly) {
+        monthlyIncome = monthlyIncome.plus(tx.amount);
+      }
+    } else {
+      totalExpense = totalExpense.plus(tx.amount);
+      if (isMonthly) {
+        monthlyExpense = monthlyExpense.plus(tx.amount);
+      }
+
+      const existing = categoryTotals.get(tx.categoryId);
+      if (existing) {
+        existing.total = existing.total.plus(tx.amount);
+        existing.transactionCount += 1;
+      } else {
+        categoryTotals.set(tx.categoryId, {
+          total: new Prisma.Decimal(tx.amount),
+          categoryName: tx.category.name,
+          categoryIcon: tx.category.icon,
+          categoryColor: tx.category.color,
+          transactionCount: 1,
+        });
+      }
+    }
+  }
+
+  const totalBalance = totalIncome.minus(totalExpense);
+  const monthlyBalance = monthlyIncome.minus(monthlyExpense);
+
+  const expenseBreakdown = Array.from(categoryTotals.entries())
+    .map(([categoryId, data]) => ({
+      categoryId,
+      categoryName: data.categoryName,
+      categoryIcon: data.categoryIcon,
+      categoryColor: data.categoryColor,
+      total: data.total.toString(),
+      percentage: totalExpense.greaterThan(0)
+        ? data.total.dividedBy(totalExpense).times(100).toNumber()
+        : 0,
+      transactionCount: data.transactionCount,
+    }))
+    .sort((a, b) => Number.parseFloat(b.total) - Number.parseFloat(a.total));
+
+  return {
+    totalBalance: totalBalance.toString(),
+    totalIncome: totalIncome.toString(),
+    totalExpense: totalExpense.toString(),
+    monthlyIncome: monthlyIncome.toString(),
+    monthlyExpense: monthlyExpense.toString(),
+    monthlyBalance: monthlyBalance.toString(),
+    transactionCount: allTransactions.length,
+    expenseBreakdown,
+  };
+}

@@ -75,6 +75,27 @@ export const transactionFiltersSchema = z.object({
   pageSize: z.coerce.number().int().positive().max(100).default(20),
 });
 
+export const categoryBreakdownItemSchema = z.object({
+  categoryId: z.string().uuid(),
+  categoryName: z.string(),
+  categoryIcon: z.string().nullable(),
+  categoryColor: z.string().nullable(),
+  total: z.string(),
+  percentage: z.number(),
+  transactionCount: z.number(),
+});
+
+export const transactionStatsSchema = z.object({
+  totalBalance: z.string(),
+  totalIncome: z.string(),
+  totalExpense: z.string(),
+  monthlyIncome: z.string(),
+  monthlyExpense: z.string(),
+  monthlyBalance: z.string(),
+  transactionCount: z.number(),
+  expenseBreakdown: z.array(categoryBreakdownItemSchema),
+});
+
 export type Category = z.infer<typeof categorySchema>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
@@ -83,3 +104,5 @@ export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
 export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
 export type TransactionListResponse = z.infer<typeof transactionListResponseSchema>;
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
+export type CategoryBreakdownItem = z.infer<typeof categoryBreakdownItemSchema>;
+export type TransactionStats = z.infer<typeof transactionStatsSchema>;
