@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import { useChat } from './useChat';
 import { SuggestedQuestions } from './SuggestedQuestions';
 import { Button } from '@/components/Button';
+import { useAppSelector } from '@/app/hooks';
+import { selectCurrentUser } from '@/features/auth/authSlice';
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -21,6 +23,8 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
   } = useChat();
 
   const [input, setInput] = useState('');
+  const user = useAppSelector(selectCurrentUser);
+  const firstName = user?.name?.split(' ')[0] ?? null;
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -29,6 +33,13 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, streamingText]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`;
+    }
+  }, [input]);
 
   useEffect(() => {
     if (isOpen && !isStreaming) {
@@ -130,16 +141,16 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
         >
           {!hasMessages && (
             <div className="space-y-6">
-              <div className="rounded-xl bg-gradient-to-br from-primary-50 to-white p-5 text-center">
+              <div className="rounded-xl bg-linear-to-br from-primary-50 to-white p-5 text-center">
                 <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-primary-100 text-2xl">
                   ✨
                 </div>
                 <h3 className="mb-1 text-base font-semibold text-gray-900">
-                  Hi! I'm your finance assistant
+                  {firstName ? `Hi, ${firstName}!` : 'Hi there!'}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Ask me about your spending, savings, or how to improve your
-                  finances.
+                  I'm your finance assistant. Ask me about your spending,
+                  savings, or how to improve your finances.
                 </p>
               </div>
 
@@ -185,7 +196,9 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
               placeholder="Ask anything about your finances..."
               rows={1}
               disabled={isStreaming}
-              className="flex-1 resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+              maxLength={4000}
+              style={{ minHeight: '40px', maxHeight: '120px' }}
+              className="flex-1 resize-none overflow-y-auto rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 disabled:text-gray-500"
             />
             {isStreaming ? (
               <Button type="button" variant="secondary" onClick={cancelStream}>
