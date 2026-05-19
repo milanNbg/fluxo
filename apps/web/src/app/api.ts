@@ -24,6 +24,10 @@ import type {
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
 
+interface SuggestionsResponse {
+  questions: string[];
+}
+
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
@@ -210,6 +214,10 @@ export const api = createApi({
       providesTags: [{ type: 'Transaction', id: 'STATS' }],
     }),
 
+    getSuggestions: builder.query<SuggestionsResponse, void>({
+      query: () => '/ai/suggestions',
+    }),
+
     listTransactions: builder.query<TransactionListResponse, TransactionFilters>({
       query: (filters) => ({
         url: '/transactions',
@@ -288,4 +296,5 @@ export const {
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
   useGetTransactionStatsQuery,
+  useGetSuggestionsQuery,
 } = api;

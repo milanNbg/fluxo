@@ -1,8 +1,9 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/app/api';
+import { ChatPanel } from '@/features/ai/ChatPanel';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -20,6 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -68,6 +70,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               {item.label}
             </NavLink>
           ))}
+
+          <button
+            type="button"
+            onClick={() => setIsChatOpen(true)}
+            className="mt-4 flex w-full items-center gap-2 rounded-lg bg-linear-to-r from-primary-500 to-primary-700 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md hover:brightness-110"
+          >
+            <span className="text-base" aria-hidden="true">
+              ✨
+            </span>
+            AI Assistant
+          </button>
         </nav>
 
         <div className="border-t border-gray-200 p-4">
@@ -98,18 +111,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Link to="/dashboard" className="text-xl font-bold text-gray-900">
               <span className="text-primary-600">Fluxo</span>
             </Link>
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              {isLoggingOut ? '...' : 'Sign out'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                className="rounded-lg bg-linear-to-r from-primary-500 to-primary-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm"
+                aria-label="Open AI Assistant"
+              >
+                ✨ AI
+              </button>
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {isLoggingOut ? '...' : 'Sign out'}
+              </button>
+            </div>
           </div>
         </header>
 
         <div className="p-6 md:p-8">{children}</div>
       </main>
+
+      <ChatPanel isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
