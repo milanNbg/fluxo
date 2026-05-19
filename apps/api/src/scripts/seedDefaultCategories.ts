@@ -12,7 +12,9 @@ async function main(): Promise<void> {
     },
   });
 
-  const usersWithoutCategories = users.filter((u) => u._count.categories === 0);
+  const usersWithoutCategories = users.filter(
+  (u: (typeof users)[number]) => u._count.categories === 0,
+);
 
   if (usersWithoutCategories.length === 0) {
     console.log('✅ All users already have categories. Nothing to do.');

@@ -7,8 +7,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 tsx watch --clear-screen=false src/index.ts",
-    "build": "tsc -b",
-    "start": "node dist/index.js",
+    "build": "pnpm --filter @fluxo/shared build && prisma generate && tsc -b",
+    "start": "node dist/src/index.js",
     "lint": "eslint . --max-warnings 0",
     "type-check": "tsc -b --noEmit",
     "test": "vitest run",
