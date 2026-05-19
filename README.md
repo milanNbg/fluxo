@@ -2,6 +2,10 @@
 
 > Modern personal finance dashboard with streaming AI assistant powered by Claude. Track expenses, analyze spending patterns, and get personalized financial insights.
 
+🔗 **Live Demo:** _Coming soon — deployment in progress_
+
+📸 **[View Screenshots](#-screenshots)** • 🏗️ **[Architecture Notes](./docs/ARCHITECTURE.md)** • 🤖 **[AI Features](#-key-features)**
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-22.x-green.svg)
 ![React](https://img.shields.io/badge/react-19-61dafb.svg)
@@ -22,24 +26,57 @@
 
 ---
 
+---
+
+## 💡 Why I Built This
+
+I wanted to build a portfolio project that demonstrates **modern full-stack TypeScript development** with **real AI integration** — not just another todo app or weather widget.
+
+**Fluxo** combines:
+- **End-to-end type safety** through a monorepo with shared Zod schemas
+- **Production-grade authentication** patterns used by companies like Auth0 and Stripe
+- **Real Anthropic Claude integration** with streaming responses and personalized context injection
+- **Multi-tenant architecture** with proper data isolation
+- **Modern React patterns** (React 19, RTK Query, Tailwind 4)
+
+Every architectural decision is documented in [ARCHITECTURE.md](./docs/ARCHITECTURE.md) with the reasoning behind it.
+
 ## 📸 Screenshots
 
-### Dashboard with Real-Time Stats
-![Dashboard](./docs/screenshots/02-dashboard.png)
+### 🤖 AI Assistant — Streaming Response with Personalized Context
 
-### AI Assistant — Streaming Response with Personalized Context
+The AI assistant analyzes your actual transaction data and provides personalized insights. Built with Server-Sent Events for real-time streaming, just like ChatGPT.
+
 ![AI Assistant Streaming](./docs/screenshots/06-ai-streaming.png)
 
-### Transaction Management with Filters & Pagination
-![Transactions](./docs/screenshots/03-transactions.png)
+### 📊 Dashboard with Real-Time Stats
 
-### Add Transaction — Type-Safe Form with Zod Validation
-![Add Transaction](./docs/screenshots/04-add-transaction.png)
+Live financial overview with category breakdown, monthly trends, and recent activity.
 
-### AI Assistant Welcome Screen
+![Dashboard](./docs/screenshots/02-dashboard.png)
+
+### 💬 AI Assistant Welcome Screen
+
+Personalized greeting with suggested questions to help users get started.
+
 ![AI Welcome](./docs/screenshots/05-ai-welcome.png)
 
-### Authentication
+### 💳 Transaction Management
+
+Smart filtering with debounced search, category filters, date ranges, and pagination.
+
+![Transactions](./docs/screenshots/03-transactions.png)
+
+### ➕ Add Transaction — Type-Safe Form
+
+End-to-end type safety: same Zod schema validates both frontend form and backend request.
+
+![Add Transaction](./docs/screenshots/04-add-transaction.png)
+
+### 🔐 Authentication
+
+Production-grade auth with JWT access tokens and HTTP-only refresh cookies.
+
 ![Login](./docs/screenshots/01-login.png)
 
 ---
