@@ -1,92 +1,124 @@
-# Fluxo
+# 💸 Fluxo — AI-Powered Personal Finance Dashboard
 
-> Modern personal finance dashboard with AI-powered insights. Track expenses, manage budgets, set savings goals, and get intelligent recommendations powered by Claude.
+> Modern personal finance dashboard with streaming AI assistant powered by Claude. Track expenses, analyze spending patterns, and get personalized financial insights.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-22.x-green.svg)
 ![React](https://img.shields.io/badge/react-19-61dafb.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-5.7-3178c6.svg)
+![Claude](https://img.shields.io/badge/AI-Claude%204.5-8B5CF6.svg)
 
-## Overview
+---
 
-Fluxo is a full-stack personal finance application built with a modern TypeScript stack. It demonstrates end-to-end type safety, production-grade authentication, and a scalable monorepo architecture.
+## ✨ Highlights
 
-**Status:** 🚧 Active development — backend foundation and authentication complete, frontend UI in progress.
+🎯 **AI Assistant powered by Claude** — Streaming chat with personalized financial insights based on your actual transaction data
 
-## Tech Stack
+🔐 **Production-grade authentication** — JWT access tokens, HTTP-only refresh cookies, automatic rotation, rate limiting, Argon2id password hashing
+
+⚡ **End-to-end type safety** — Shared Zod schemas between frontend and backend via pnpm monorepo
+
+🏗️ **Modern architecture** — React 19, Fastify 5, Prisma 7 with adapter pattern, PostgreSQL 17
+
+---
+
+## 📸 Screenshots
+
+### Dashboard with Real-Time Stats
+![Dashboard](./docs/screenshots/02-dashboard.png)
+
+### AI Assistant — Streaming Response with Personalized Context
+![AI Assistant Streaming](./docs/screenshots/06-ai-streaming.png)
+
+### Transaction Management with Filters & Pagination
+![Transactions](./docs/screenshots/03-transactions.png)
+
+### Add Transaction — Type-Safe Form with Zod Validation
+![Add Transaction](./docs/screenshots/04-add-transaction.png)
+
+### AI Assistant Welcome Screen
+![AI Welcome](./docs/screenshots/05-ai-welcome.png)
+
+### Authentication
+![Login](./docs/screenshots/01-login.png)
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 19** + **TypeScript 5.7** with strict mode
-- **Vite 6** for blazing-fast development
-- **Redux Toolkit** + **RTK Query** for state and data fetching
-- **Tailwind CSS 4** for styling
+- **React 19** with TypeScript 5.7 strict mode
+- **Vite 6** for fast development
+- **Redux Toolkit + RTK Query** for state management and data fetching
+- **Tailwind CSS 4** (Oxide engine) for styling
 - **React Router 7** for routing
-- **React Hook Form** + **Zod** for validation (planned)
-- **Recharts** for data visualization (planned)
+- **React Markdown** for AI response rendering
+- **Async Mutex** for token refresh synchronization
 
 ### Backend
-- **Node.js 22** + **Fastify 5** for high-performance HTTP server
-- **PostgreSQL 17** + **Prisma 7** with adapter pattern
+- **Node.js 22 + Fastify 5** for high-performance HTTP server
+- **PostgreSQL 17 + Prisma 7** with adapter pattern
 - **JWT** access tokens + **HTTP-only signed cookies** for refresh tokens
 - **Argon2id** password hashing (OWASP recommended)
+- **Anthropic SDK** for Claude integration with streaming responses
 - **Pino** for structured logging
-- **Zod** for runtime validation
 
 ### Infrastructure
-- **pnpm workspaces** + **Turborepo** for monorepo management
+- **pnpm workspaces + Turborepo** for monorepo management
 - **Docker Compose** for local PostgreSQL
-- **GitHub Actions** for CI/CD (planned)
+- **Zod** for runtime validation everywhere
 
-## Project Structure
+---
 
-```
-fluxo/
-├── apps/
-│   ├── web/          # React frontend
-│   └── api/          # Node.js backend
-├── packages/
-│   └── shared/       # Shared Zod schemas, TypeScript types, constants
-├── docs/
-│   └── ARCHITECTURE.md
-├── docker-compose.yml
-└── ...
-```
+## 🎬 Key Features
 
-## Key Features
+### Implemented ✅
 
-### Implemented
-- ✅ Monorepo with shared types between frontend and backend
-- ✅ End-to-end type safety via Zod schemas
-- ✅ Full authentication system: register, login, logout, token refresh
-- ✅ Refresh token rotation with database revocation
-- ✅ Rate limiting on auth endpoints
-- ✅ Health checks (server + database)
-- ✅ Graceful shutdown handling
-- ✅ Security headers (Helmet), CORS, signed cookies
+- **Full Authentication** — Register, login, logout with automatic token refresh and rotation
+- **Transaction CRUD** — Create, edit, delete with category assignment and confirmation dialogs
+- **Smart Filtering** — Search with debouncing, type filter, date range, category filter, pagination
+- **Dashboard Analytics** — Real-time stats, category breakdown with percentages, recent transactions widget
+- **AI Assistant** — Streaming Server-Sent Events chat with Claude, user-context injection (transactions + stats), conversation history, markdown rendering
+- **Multi-tenant Security** — Ownership checks on all resources, RTK Query cache reset on auth changes
+- **Default Categories** — Auto-seeded on registration for new users
+- **Migration Support** — Script to backfill default categories for existing users
 
-### Planned
-- 🔜 Transaction tracking with categories
-- 🔜 Budget management with alerts
-- 🔜 Savings goals with progress tracking
-- 🔜 AI assistant powered by Claude (Anthropic API)
-- 🔜 Data visualization (charts and dashboards)
-- 🔜 Dark mode and i18n (English/Serbian)
-- 🔜 PWA support
+### Planned 🔜
 
-## Architecture & Decisions
+- Budget tracking with category limits and alerts
+- Savings goals with progress visualization
+- Recurring transactions
+- Data export (CSV, JSON)
+- Dark mode
+- Internationalization (English/Serbian)
 
-See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for a detailed explanation of technology choices and the reasoning behind them.
+---
 
-## Getting Started
+## 🏗️ Architecture
+
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed technology decisions and reasoning.
+
+### Notable Patterns
+
+- **End-to-end type safety** via shared Zod schemas (`packages/shared`)
+- **Optimistic UI** with RTK Query cache invalidation
+- **Token refresh mutex** to prevent race conditions during simultaneous 401s
+- **Server-Sent Events (SSE)** for AI streaming with `AbortController` for cancellation
+- **Adapter pattern in Prisma 7** for future edge deployment compatibility
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 22 or higher
-- pnpm 10 or higher
+- Node.js 22+
+- pnpm 10+
 - Docker Desktop (for local PostgreSQL)
+- Anthropic API key ([get one here](https://console.anthropic.com))
 
 ### Installation
 
-```bash
+\`\`\`bash
 # Clone the repository
 git clone https://github.com/milanNbg/fluxo.git
 cd fluxo
@@ -100,38 +132,88 @@ docker compose up -d
 # Set up environment variables
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
+# Edit apps/api/.env and add your ANTHROPIC_API_KEY
 
 # Run database migrations
 pnpm --filter @fluxo/api exec prisma migrate dev
-```
+\`\`\`
 
 ### Development
 
-```bash
+\`\`\`bash
 # Start backend (http://localhost:3000)
 pnpm --filter @fluxo/api dev
 
 # Start frontend (http://localhost:5173)
 pnpm --filter @fluxo/web dev
-```
+\`\`\`
 
 ### Health Check
 
-After starting, verify everything works:
-
-```bash
+\`\`\`bash
 curl http://localhost:3000/health/ready
-```
+\`\`\`
 
 Expected response:
 
-```json
+\`\`\`json
 {
   "status": "ready",
   "checks": { "server": "ok", "database": "ok" }
 }
-```
+\`\`\`
 
-## License
+---
+
+## 📂 Project Structure
+
+\`\`\`
+fluxo/
+├── apps/
+│   ├── web/                 # React frontend
+│   │   ├── src/
+│   │   │   ├── app/         # Redux store, RTK Query API
+│   │   │   ├── components/  # Shared components
+│   │   │   ├── features/    # Feature modules (auth, transactions, ai)
+│   │   │   └── pages/       # Route pages
+│   │   └── ...
+│   └── api/                 # Fastify backend
+│       ├── src/
+│       │   ├── config/      # Environment validation
+│       │   ├── lib/         # Database client, helpers
+│       │   ├── plugins/     # Fastify plugins (auth, errors)
+│       │   ├── routes/      # HTTP route handlers
+│       │   └── services/    # Business logic
+│       └── prisma/          # Schema and migrations
+├── packages/
+│   └── shared/              # Shared Zod schemas + TS types
+├── docs/
+│   ├── ARCHITECTURE.md      # Technology decisions
+│   └── screenshots/         # Application screenshots
+├── docker-compose.yml
+└── ...
+\`\`\`
+
+---
+
+## 🔒 Security Practices
+
+- **Argon2id** password hashing (OWASP recommendation)
+- **JWT access tokens** (15 min) + **HTTP-only refresh cookies** (7 days) hybrid pattern
+- **Refresh token rotation** — old token revoked in DB on every refresh
+- **Rate limiting** on auth endpoints (5 attempts per 15 min)
+- **Signed cookies** with strong secret to prevent tampering
+- **Helmet** for security headers
+- **CORS** properly configured with credentials and exact origin
+- **Multi-tenant isolation** — every resource query includes \`userId\` constraint
+- **Environment validation** with Zod at startup (fail fast)
+
+---
+
+## 📜 License
 
 MIT © [milanNbg](https://github.com/milanNbg)
+
+---
+
+**Built with ❤️ as a portfolio project demonstrating modern full-stack TypeScript development.**
