@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const initials = user.name
     ? user.name
         .split(' ')
-        .map((part: string) => part[0] ?? '')
+        .map((part) => part[0] ?? '')
         .slice(0, 2)
         .join('')
         .toUpperCase()

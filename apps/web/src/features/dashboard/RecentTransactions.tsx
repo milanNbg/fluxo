@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
 import { useListTransactionsQuery } from '@/app/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Transaction } from '@fluxo/shared';
 
 export function RecentTransactions() {
   const { data, isLoading } = useListTransactionsQuery({
@@ -45,7 +44,7 @@ export function RecentTransactions() {
 
       {data && data.transactions.length > 0 && (
         <ul className="divide-y divide-gray-100">
-          {data.transactions.map((tx: Transaction) => (
+          {data.transactions.map((tx) => (
             <li key={tx.id} className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-gray-50">
               {tx.category && (
                 <div
