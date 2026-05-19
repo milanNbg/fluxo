@@ -226,7 +226,7 @@ export const api = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.transactions.map(({ id }) => ({
+              ...result.transactions.map(({ id }: { id: string }) => ({
                 type: 'Transaction' as const,
                 id,
               })),

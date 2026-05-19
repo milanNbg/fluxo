@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useAppSelector } from '@/app/hooks';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { useLogoutMutation } from '@/app/api';
 import { ChatPanel } from '@/features/ai/ChatPanel';
@@ -19,7 +19,6 @@ const navItems = [
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const user = useAppSelector(selectCurrentUser);
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -38,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const initials = user.name
     ? user.name
         .split(' ')
-        .map((part) => part[0] ?? '')
+        .map((part: string) => part[0] ?? '')
         .slice(0, 2)
         .join('')
         .toUpperCase()
