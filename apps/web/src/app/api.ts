@@ -24,7 +24,7 @@ import type {
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
 
-interface SuggestionsResponse {
+export interface SuggestionsResponse {
   questions: string[];
 }
 
@@ -226,7 +226,7 @@ export const api = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.transactions.map(({ id }: { id: string }) => ({
+              ...result.transactions.map(({ id }) => ({
                 type: 'Transaction' as const,
                 id,
               })),
