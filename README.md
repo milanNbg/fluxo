@@ -118,7 +118,7 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed technology decis
 
 ### Installation
 
-\`\`\`bash
+```bash
 # Clone the repository
 git clone https://github.com/milanNbg/fluxo.git
 cd fluxo
@@ -136,38 +136,38 @@ cp apps/web/.env.example apps/web/.env
 
 # Run database migrations
 pnpm --filter @fluxo/api exec prisma migrate dev
-\`\`\`
+```
 
 ### Development
 
-\`\`\`bash
+```bash
 # Start backend (http://localhost:3000)
 pnpm --filter @fluxo/api dev
 
 # Start frontend (http://localhost:5173)
 pnpm --filter @fluxo/web dev
-\`\`\`
+```
 
 ### Health Check
 
-\`\`\`bash
+```bash
 curl http://localhost:3000/health/ready
-\`\`\`
+```
 
 Expected response:
 
-\`\`\`json
+```json
 {
   "status": "ready",
   "checks": { "server": "ok", "database": "ok" }
 }
-\`\`\`
+```
 
 ---
 
 ## 📂 Project Structure
 
-\`\`\`
+```
 fluxo/
 ├── apps/
 │   ├── web/                 # React frontend
@@ -192,7 +192,7 @@ fluxo/
 │   └── screenshots/         # Application screenshots
 ├── docker-compose.yml
 └── ...
-\`\`\`
+```
 
 ---
 
@@ -205,7 +205,7 @@ fluxo/
 - **Signed cookies** with strong secret to prevent tampering
 - **Helmet** for security headers
 - **CORS** properly configured with credentials and exact origin
-- **Multi-tenant isolation** — every resource query includes \`userId\` constraint
+- **Multi-tenant isolation** — every resource query includes `userId` constraint
 - **Environment validation** with Zod at startup (fail fast)
 
 ---
