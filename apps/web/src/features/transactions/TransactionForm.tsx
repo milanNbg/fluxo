@@ -88,7 +88,7 @@ export function TransactionForm({
         await updateTransaction({
           id: transaction.id,
           input: {
-            amount: Number.parseFloat(data.amount),
+            amount: Number.parseFloat(String(data.amount)),
             type: data.type,
             description: data.description,
             date: data.date,
@@ -97,7 +97,7 @@ export function TransactionForm({
         }).unwrap();
       } else {
         await createTransaction({
-          amount: Number.parseFloat(data.amount),
+          amount: Number.parseFloat(String(data.amount)),
           type: data.type,
           description: data.description,
           date: data.date,
