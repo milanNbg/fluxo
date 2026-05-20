@@ -1,8 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
-import {
-  registerUserSchema,
-  loginUserSchema,
-} from '@fluxo/shared';
+import { registerUserSchema, loginUserSchema } from '@fluxo/shared';
 import {
   registerUser,
   loginUser,
@@ -26,27 +23,28 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request, reply) => {
-    const parsed = registerUserSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.badRequest(parsed.error.errors[0]?.message ?? 'Invalid input');
-    }
+      const parsed = registerUserSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.badRequest(parsed.error.errors[0]?.message ?? 'Invalid input');
+      }
 
-    const result = await registerUser(fastify, parsed.data);
+      const result = await registerUser(fastify, parsed.data);
 
-    reply.setCookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      signed: true,
-    });
+      reply.setCookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        signed: true,
+      });
 
-    return reply.status(201).send({
-      user: result.user,
-      tokens: { accessToken: result.accessToken },
-    });
-  });
+      return reply.status(201).send({
+        user: result.user,
+        tokens: { accessToken: result.accessToken },
+      });
+    },
+  );
 
   fastify.post(
     '/login',
@@ -59,27 +57,28 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request, reply) => {
-    const parsed = loginUserSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.badRequest(parsed.error.errors[0]?.message ?? 'Invalid input');
-    }
+      const parsed = loginUserSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.badRequest(parsed.error.errors[0]?.message ?? 'Invalid input');
+      }
 
-    const result = await loginUser(fastify, parsed.data);
+      const result = await loginUser(fastify, parsed.data);
 
-    reply.setCookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      signed: true,
-    });
+      reply.setCookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+        signed: true,
+      });
 
-    return reply.send({
-      user: result.user,
-      tokens: { accessToken: result.accessToken },
-    });
-  });
+      return reply.send({
+        user: result.user,
+        tokens: { accessToken: result.accessToken },
+      });
+    },
+  );
 
   fastify.post('/refresh', async (request, reply) => {
     const cookie = request.cookies[REFRESH_TOKEN_COOKIE];
@@ -97,7 +96,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
     reply.setCookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       signed: true,
@@ -122,12 +121,8 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ success: true });
   });
 
-  fastify.get(
-    '/me',
-    { onRequest: [fastify.authenticate] },
-    async (request) => {
-      const user = await getCurrentUser(request.user.sub);
-      return { user };
-    },
-  );
+  fastify.get('/me', { onRequest: [fastify.authenticate] }, async (request) => {
+    const user = await getCurrentUser(request.user.sub);
+    return { user };
+  });
 };
