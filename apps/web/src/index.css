@@ -120,3 +120,7 @@
   color: rgb(209 213 219);
   cursor: not-allowed;
 }
+
+.modal-content {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
