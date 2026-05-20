@@ -1,8 +1,9 @@
 # 💸 Fluxo — AI-Powered Personal Finance Dashboard
 
 > Modern personal finance dashboard with streaming AI assistant powered by Claude. Track expenses, analyze spending patterns, and get personalized financial insights.
+> **Try the demo:** Register a free account at [fluxo-milan.vercel.app/register](https://fluxo-milan.vercel.app/register) — takes 30 seconds. All data is sandboxed per user.
 
-🔗 **Live Demo:** _Coming soon — deployment in progress_
+🔗 **Live Demo:** **[fluxo-milan.vercel.app](https://fluxo-milan.vercel.app)** — try it now, no signup required to browse
 
 📸 **[View Screenshots](#-screenshots)** • 🏗️ **[Architecture Notes](./docs/ARCHITECTURE.md)** • 🤖 **[AI Features](#-key-features)**
 

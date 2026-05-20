@@ -1,5 +1,8 @@
 # Interview Talking Points — Fluxo
 
+🔗 **Live Demo:** https://fluxo-milan.vercel.app  
+📦 **GitHub:** https://github.com/milanNbg/fluxo
+
 Cheat sheet for discussing Fluxo in job interviews, LinkedIn profiles, and CV descriptions. Use these as starting points and adapt to your audience.
 
 ---
@@ -208,7 +211,7 @@ Full-stack TypeScript application demonstrating production-grade patterns:
 
 - Architectural decisions: All technology choices documented with reasoning in ARCHITECTURE.md
 
-- Live demo: [URL after deploy]
+- Live demo: https://fluxo-milan.vercel.app
 - GitHub: github.com/milanNbg/fluxo
 
 ---
