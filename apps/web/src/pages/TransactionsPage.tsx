@@ -25,10 +25,8 @@ export function TransactionsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] =
-    useState<Transaction | null>(null);
-  const [deletingTransaction, setDeletingTransaction] =
-    useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
 
   const queryParams = {
     page,
@@ -40,11 +38,9 @@ export function TransactionsPage() {
     ...(filters.search && { search: filters.search }),
   };
 
-  const { data, isLoading, isFetching, isError } =
-    useListTransactionsQuery(queryParams);
+  const { data, isLoading, isFetching, isError } = useListTransactionsQuery(queryParams);
   const { data: categoriesData } = useListCategoriesQuery();
-  const [deleteTransaction, { isLoading: isDeleting }] =
-    useDeleteTransactionMutation();
+  const [deleteTransaction, { isLoading: isDeleting }] = useDeleteTransactionMutation();
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setFilters(newFilters);
@@ -86,14 +82,16 @@ export function TransactionsPage() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Transactions</h1>
+            <p className="mt-1 text-sm text-gray-600 sm:mt-2 sm:text-base">
               Track your income and expenses
             </p>
           </div>
-          <Button onClick={openAddModal}>+ Add transaction</Button>
+          <Button onClick={openAddModal} className="sm:w-auto">
+            + Add transaction
+          </Button>
         </div>
 
         <TransactionFilters filters={filters} onFiltersChange={handleFiltersChange} />
@@ -118,13 +116,11 @@ export function TransactionsPage() {
         )}
 
         {data && data.transactions.length === 0 && !hasActiveFilters && (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center">
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center sm:p-16">
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary-50 text-3xl">
               💸
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              No transactions yet
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">No transactions yet</h3>
             <p className="mt-2 text-sm text-gray-600">
               Add your first transaction to start tracking your finances.
             </p>
@@ -135,13 +131,11 @@ export function TransactionsPage() {
         )}
 
         {data && data.transactions.length === 0 && hasActiveFilters && (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center">
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center sm:p-16">
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100 text-3xl">
               🔍
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              No matching transactions
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">No matching transactions</h3>
             <p className="mt-2 text-sm text-gray-600">
               Try adjusting your filters or clearing them to see all transactions.
             </p>
@@ -152,74 +146,132 @@ export function TransactionsPage() {
         )}
 
         {data && data.transactions.length > 0 && (
-          <div className={`rounded-xl border border-gray-200 bg-white shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-60' : ''}`}>
-            <table className="w-full">
-              <thead className="border-b border-gray-200 bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {data.transactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                      {new Date(tx.date).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {tx.category && (
-                        <span
-                          className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-                          style={{
-                            backgroundColor: tx.category.color
-                              ? `${tx.category.color}15`
-                              : '#f3f4f6',
-                            color: tx.category.color ?? '#374151',
-                          }}
-                        >
-                          {tx.category.icon && <span>{tx.category.icon}</span>}
-                          {tx.category.name}
-                        </span>
+          <div
+            className={`rounded-xl border border-gray-200 bg-white shadow-sm transition-opacity ${
+              isFetching && !isLoading ? 'opacity-60' : ''
+            }`}
+          >
+            {/* Desktop: Table view */}
+            <div className="hidden md:block">
+              <table className="w-full">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Description
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.transactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-gray-50">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        {new Date(tx.date).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {tx.category && (
+                          <span
+                            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+                            style={{
+                              backgroundColor: tx.category.color
+                                ? `${tx.category.color}15`
+                                : '#f3f4f6',
+                              color: tx.category.color ?? '#374151',
+                            }}
+                          >
+                            {tx.category.icon && <span>{tx.category.icon}</span>}
+                            {tx.category.name}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{tx.description ?? '—'}</td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-right text-sm font-semibold ${
+                          tx.type === 'income' ? 'text-success' : 'text-gray-900'
+                        }`}
+                      >
+                        {tx.type === 'income' ? '+' : '−'}€{Number(tx.amount).toFixed(2)}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
+                        <TransactionActions
+                          transaction={tx}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile: Card view */}
+            <div className="divide-y divide-gray-100 md:hidden">
+              {data.transactions.map((tx) => (
+                <div key={tx.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        {tx.category && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            style={{
+                              backgroundColor: tx.category.color
+                                ? `${tx.category.color}15`
+                                : '#f3f4f6',
+                              color: tx.category.color ?? '#374151',
+                            }}
+                          >
+                            {tx.category.icon && <span>{tx.category.icon}</span>}
+                            {tx.category.name}
+                          </span>
+                        )}
+                      </div>
+                      {tx.description && (
+                        <p className="mt-2 text-sm text-gray-900">{tx.description}</p>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {tx.description ?? '—'}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-right text-sm font-semibold ${
-                        tx.type === 'income' ? 'text-success' : 'text-gray-900'
-                      }`}
-                    >
-                      {tx.type === 'income' ? '+' : '−'}€{Number(tx.amount).toFixed(2)}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
+                      <p className="mt-1 text-xs text-gray-500">
+                        {new Date(tx.date).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`whitespace-nowrap text-sm font-semibold ${
+                          tx.type === 'income' ? 'text-success' : 'text-gray-900'
+                        }`}
+                      >
+                        {tx.type === 'income' ? '+' : '−'}€{Number(tx.amount).toFixed(2)}
+                      </span>
                       <TransactionActions
                         transaction={tx}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                       />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <Pagination
               page={page}
               pageSize={pageSize}
