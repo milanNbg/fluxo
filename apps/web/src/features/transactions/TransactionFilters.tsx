@@ -4,6 +4,7 @@ import { useListCategoriesQuery } from '@/app/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
+import { DatePicker } from '@/components/DatePicker';
 
 export interface FilterState {
   type: TransactionType | '';
@@ -26,10 +27,7 @@ interface TransactionFiltersProps {
   onFiltersChange: (filters: FilterState) => void;
 }
 
-export function TransactionFilters({
-  filters,
-  onFiltersChange,
-}: TransactionFiltersProps) {
+export function TransactionFilters({ filters, onFiltersChange }: TransactionFiltersProps) {
   const { data: categoriesData } = useListCategoriesQuery();
   const [localSearch, setLocalSearch] = useState(filters.search);
   const debouncedSearch = useDebounce(localSearch, 300);
@@ -47,10 +45,7 @@ export function TransactionFilters({
 
   const categories = categoriesData?.categories ?? [];
 
-  const updateFilter = <K extends keyof FilterState>(
-    key: K,
-    value: FilterState[K],
-  ) => {
+  const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -89,18 +84,18 @@ export function TransactionFilters({
           ))}
         </Select>
 
-        <Input
+        <DatePicker
           label="From date"
-          type="date"
           value={filters.startDate}
-          onChange={(e) => updateFilter('startDate', e.target.value)}
+          onChange={(value) => updateFilter('startDate', value)}
+          placeholder="Any start date"
         />
 
-        <Input
+        <DatePicker
           label="To date"
-          type="date"
           value={filters.endDate}
-          onChange={(e) => updateFilter('endDate', e.target.value)}
+          onChange={(value) => updateFilter('endDate', value)}
+          placeholder="Any end date"
         />
       </div>
     </div>

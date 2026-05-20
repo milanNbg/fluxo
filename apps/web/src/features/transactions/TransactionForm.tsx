@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { transactionTypeSchema, type Transaction } from '@fluxo/shared';
@@ -8,6 +8,7 @@ import {
   useUpdateTransactionMutation,
 } from '@/app/api';
 import { Input } from '@/components/Input';
+import { DatePicker } from '@/components/DatePicker';
 import { Select } from '@/components/Select';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -48,16 +49,11 @@ interface TransactionFormProps {
   onCancel: () => void;
 }
 
-export function TransactionForm({
-  transaction,
-  onSuccess,
-  onCancel,
-}: TransactionFormProps) {
+export function TransactionForm({ transaction, onSuccess, onCancel }: TransactionFormProps) {
   const isEditMode = Boolean(transaction);
   const today = new Date().toISOString().split('T')[0]!;
 
-  const { data: categoriesData, isLoading: isLoadingCategories } =
-    useListCategoriesQuery();
+  const { data: categoriesData, isLoading: isLoadingCategories } = useListCategoriesQuery();
   const [createTransaction, { isLoading: isCreating, error: createError }] =
     useCreateTransactionMutation();
   const [updateTransaction, { isLoading: isUpdating, error: updateError }] =
@@ -69,6 +65,7 @@ export function TransactionForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormInput>({
     resolver: zodResolver(formSchema),
@@ -154,11 +151,18 @@ export function TransactionForm({
         ))}
       </Select>
 
-      <Input
-        label="Date"
-        type="date"
-        error={errors.date?.message}
-        {...register('date')}
+      <Controller
+        control={control}
+        name="date"
+        render={({ field }) => (
+          <DatePicker
+            label="Date"
+            value={field.value}
+            onChange={field.onChange}
+            placeholder="Select date"
+            error={errors.date?.message}
+          />
+        )}
       />
 
       <Input

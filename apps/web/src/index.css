@@ -12,8 +12,7 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
 
-  --font-sans:
-    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 @layer base {
@@ -28,4 +27,96 @@
     margin: 0;
     min-height: 100vh;
   }
+}
+
+/* React Day Picker — Fluxo theme */
+.fluxo-datepicker .rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: rgb(37 99 235);
+  --rdp-background-color: rgb(239 246 255);
+  margin: 0;
+  font-family: inherit;
+}
+
+.fluxo-datepicker .rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.fluxo-datepicker .rdp-caption_label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+}
+
+.fluxo-datepicker .rdp-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.fluxo-datepicker .rdp-nav_button {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: rgb(107 114 128);
+  transition: background-color 0.15s;
+}
+
+.fluxo-datepicker .rdp-nav_button:hover {
+  background-color: rgb(243 244 246);
+  color: rgb(17 24 39);
+}
+
+.fluxo-datepicker .rdp-head_cell {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: rgb(156 163 175);
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0;
+}
+
+.fluxo-datepicker .rdp-day {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+  border-radius: 0.5rem;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.fluxo-datepicker .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: rgb(243 244 246);
+  color: rgb(17 24 39);
+}
+
+.fluxo-datepicker .rdp-day_today:not(.rdp-day_selected) {
+  font-weight: 700;
+  color: rgb(37 99 235);
+}
+
+.fluxo-datepicker .rdp-day_selected {
+  background-color: rgb(37 99 235) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.fluxo-datepicker .rdp-day_selected:hover {
+  background-color: rgb(29 78 216) !important;
+}
+
+.fluxo-datepicker .rdp-day_outside {
+  color: rgb(209 213 219);
+}
+
+.fluxo-datepicker .rdp-day_disabled {
+  color: rgb(209 213 219);
+  cursor: not-allowed;
 }
