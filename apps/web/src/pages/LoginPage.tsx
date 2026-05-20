@@ -9,17 +9,23 @@ import { Button } from '@/components/Button';
 
 interface FetchBaseQueryError {
   data?: { message?: string; error?: string; statusCode?: number };
-  status?: number;
+  status?: number | string;
 }
 
 function getErrorMessage(error: unknown): string {
+  console.log('Auth error full object:', error);
+  
   if (typeof error === 'object' && error !== null) {
     const err = error as FetchBaseQueryError;
+    console.log('Error data:', err.data);
+    console.log('Error status:', err.status);
+    
     if (err.data?.message) return err.data.message;
     if (err.data?.error) return err.data.error;
     if (err.status === 401) return 'Invalid email or password.';
     if (err.status === 409) return 'An account with this email already exists.';
     if (err.status === 429) return 'Too many attempts. Please try again later.';
+    if (err.status === 'FETCH_ERROR') return 'Cannot reach server. Check your connection.';
   }
   return 'Something went wrong. Please try again.';
 }
