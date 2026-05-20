@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router';
@@ -13,13 +14,8 @@ interface FetchBaseQueryError {
 }
 
 function getErrorMessage(error: unknown): string {
-  console.log('Auth error full object:', error);
-  
   if (typeof error === 'object' && error !== null) {
     const err = error as FetchBaseQueryError;
-    console.log('Error data:', err.data);
-    console.log('Error status:', err.status);
-    
     if (err.data?.message) return err.data.message;
     if (err.data?.error) return err.data.error;
     if (err.status === 401) return 'Invalid email or password.';
@@ -32,7 +28,8 @@ function getErrorMessage(error: unknown): string {
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const [registerUser, { isLoading, error }] = useRegisterMutation();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const {
     register,
@@ -43,11 +40,12 @@ export function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterUserInput) => {
+    setSubmitError(null);
     try {
       await registerUser(data).unwrap();
       navigate('/dashboard', { replace: true });
-    } catch {
-      // Error displayed via RTK Query error state
+    } catch (err) {
+      setSubmitError(getErrorMessage(err));
     }
   };
 
@@ -58,10 +56,7 @@ export function RegisterPage() {
       footer={
         <>
           Already have an account?{' '}
-          <Link
-            to="/login"
-            className="font-medium text-primary-600 hover:text-primary-700"
-          >
+          <Link to="/login" className="font-medium text-primary-600 hover:text-primary-700">
             Sign in
           </Link>
         </>
@@ -95,9 +90,9 @@ export function RegisterPage() {
           {...register('password')}
         />
 
-        {error && (
+        {submitError && (
           <div className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
-            {getErrorMessage(error)}
+            {submitError}
           </div>
         )}
 
