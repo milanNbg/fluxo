@@ -36,22 +36,22 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex sm:items-center sm:justify-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
-        className={`relative flex max-h-[90vh] w-full flex-col rounded-t-2xl bg-white shadow-xl sm:max-h-[85vh] sm:rounded-2xl ${sizes[size]}`}
+        className={`relative flex h-full w-full flex-col bg-white shadow-2xl animate-in slide-in-from-bottom-8 duration-300 sm:h-auto sm:max-h-[85vh] sm:rounded-2xl sm:slide-in-from-bottom-0 sm:zoom-in-95 ${sizes[size]}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-shrink-0 border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="shrink-0 border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <h2 id="modal-title" className="text-base font-semibold text-gray-900 sm:text-lg">
@@ -64,7 +64,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
             <button
               type="button"
               onClick={onClose}
-              className="flex-shrink-0 rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              className="shrink-0 rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               aria-label="Close modal"
             >
               <svg
@@ -84,7 +84,9 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
           </div>
         </div>
 
-        <div className="overflow-y-auto px-4 py-4 sm:px-6">{children}</div>
+        <div className="modal-content flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+          {children}
+        </div>
       </div>
     </div>
   );
