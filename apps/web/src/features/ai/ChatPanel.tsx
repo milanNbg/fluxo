@@ -56,6 +56,17 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, isStreaming, onClose]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
@@ -74,7 +85,7 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-sm transition-opacity ${
+        className={`fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm transition-opacity duration-200 ${
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={isStreaming ? undefined : onClose}
@@ -82,63 +93,60 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
       />
 
       <aside
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed inset-0 z-50 flex flex-col bg-white shadow-2xl transition-transform duration-300 sm:inset-y-0 sm:right-0 sm:left-auto sm:w-full sm:max-w-md sm:border-l sm:border-gray-200 ${
+          isOpen
+            ? 'translate-x-0 translate-y-0'
+            : 'translate-y-full sm:translate-x-full sm:translate-y-0'
         }`}
         aria-label="AI Assistant"
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-lg">
-              ✨
+        <div className="shrink-0 border-b border-gray-200 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-500 to-primary-700 text-lg">
+                ✨
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-semibold text-gray-900">AI Assistant</h2>
+                <p className="truncate text-xs text-gray-500">Powered by Claude · Personalized</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-semibold text-gray-900">
-                AI Assistant
-              </h2>
-              <p className="text-xs text-gray-500">
-                Powered by Claude · Personalized to your data
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {hasMessages && (
+            <div className="flex shrink-0 items-center gap-1">
+              {hasMessages && (
+                <button
+                  type="button"
+                  onClick={clearConversation}
+                  disabled={isStreaming}
+                  className="rounded-lg px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Clear
+                </button>
+              )}
               <button
                 type="button"
-                onClick={clearConversation}
+                onClick={onClose}
                 disabled={isStreaming}
-                className="rounded-lg px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Close AI assistant"
               >
-                Clear
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="size-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isStreaming}
-              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Close AI assistant"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="size-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+            </div>
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto bg-gray-50 px-5 py-4"
-        >
+        <div ref={scrollRef} className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4 sm:px-5">
           {!hasMessages && (
             <div className="space-y-6">
               <div className="rounded-xl bg-linear-to-br from-primary-50 to-white p-5 text-center">
@@ -149,8 +157,8 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
                   {firstName ? `Hi, ${firstName}!` : 'Hi there!'}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  I'm your finance assistant. Ask me about your spending,
-                  savings, or how to improve your finances.
+                  I'm your finance assistant. Ask me about your spending, savings, or how to improve
+                  your finances.
                 </p>
               </div>
 
@@ -164,11 +172,7 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
                 <MessageBubble key={idx} role={msg.role} content={msg.content} />
               ))}
               {streamingText && (
-                <MessageBubble
-                  role="assistant"
-                  content={streamingText}
-                  isStreaming
-                />
+                <MessageBubble role="assistant" content={streamingText} isStreaming />
               )}
               {isStreaming && !streamingText && <ThinkingIndicator />}
             </div>
@@ -181,7 +185,11 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white p-4">
+        <form
+          onSubmit={handleSubmit}
+          className="shrink-0 border-t border-gray-200 bg-white p-3 sm:p-4"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
@@ -198,7 +206,7 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
               disabled={isStreaming}
               maxLength={4000}
               style={{ minHeight: '40px', maxHeight: '120px' }}
-              className="flex-1 resize-none overflow-y-auto rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+              className="flex-1 resize-none overflow-y-auto rounded-lg border border-gray-300 bg-white px-3 py-2 text-base text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 disabled:text-gray-500 sm:text-sm"
             />
             {isStreaming ? (
               <Button type="button" variant="secondary" onClick={cancelStream}>
@@ -210,7 +218,7 @@ export function ChatPanel({ isOpen, onClose }: ChatPanelProps) {
               </Button>
             )}
           </div>
-          <p className="mt-2 text-center text-xs text-gray-400">
+          <p className="mt-2 hidden text-center text-xs text-gray-400 sm:block">
             Press Enter to send · Shift+Enter for new line
           </p>
         </form>
@@ -238,9 +246,9 @@ function MessageBubble({ role, content, isStreaming }: MessageBubbleProps) {
         }`}
       >
         {isUser ? (
-          <p className="whitespace-pre-wrap">{content}</p>
+          <p className="whitespace-pre-wrap wrap-break-word">{content}</p>
         ) : (
-          <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+          <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 wrap-break-word">
             <ReactMarkdown>{content}</ReactMarkdown>
             {isStreaming && (
               <span className="ml-0.5 inline-block size-2 animate-pulse rounded-full bg-primary-500" />
