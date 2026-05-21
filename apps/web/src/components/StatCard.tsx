@@ -20,17 +20,19 @@ export function StatCard({ label, value, icon, trend, helpText, children }: Stat
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="min-w-0 truncate text-xs font-medium text-gray-500 sm:text-sm">{label}</p>
         {icon && (
-          <span className="text-2xl" aria-hidden="true">
+          <span className="shrink-0 text-xl sm:text-2xl" aria-hidden="true">
             {icon}
           </span>
         )}
       </div>
 
-      <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900">{value}</p>
+      <p className="mt-2 break-words text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+        {value}
+      </p>
 
       {trend && (
         <p className={`mt-2 text-xs font-medium ${trendColors[trend.variant ?? 'neutral']}`}>
@@ -38,9 +40,7 @@ export function StatCard({ label, value, icon, trend, helpText, children }: Stat
         </p>
       )}
 
-      {helpText && !trend && (
-        <p className="mt-2 text-xs text-gray-500">{helpText}</p>
-      )}
+      {helpText && !trend && <p className="mt-2 text-xs text-gray-500">{helpText}</p>}
 
       {children}
     </div>
