@@ -23,6 +23,13 @@ function formatMonth(): string {
   });
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function DashboardPage() {
   const user = useAppSelector(selectCurrentUser);
   const { data: stats, isLoading } = useGetTransactionStatsQuery();
@@ -47,7 +54,7 @@ export function DashboardPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Welcome back, {user.name ?? 'there'}
+            {getGreeting()}, {user.name ?? 'there'}
           </h1>
           <p className="mt-1 text-sm text-gray-600 sm:mt-2 sm:text-base">
             Here's an overview of your finances.
