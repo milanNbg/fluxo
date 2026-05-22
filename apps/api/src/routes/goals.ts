@@ -51,7 +51,7 @@ export const goalRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.delete<{ Params: { id: string; contributionId: string } }>(
     '/:id/contributions/:contributionId',
-    async (request, reply) => {
+    async (request) => {
       const goal = await deleteContribution(
         fastify,
         request.user.sub,
