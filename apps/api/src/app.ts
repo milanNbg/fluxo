@@ -11,6 +11,7 @@ import { authRoutes } from './routes/auth.js';
 import { categoryRoutes } from './routes/categories.js';
 import { transactionRoutes } from './routes/transactions.js';
 import { aiRoutes } from './routes/ai.js';
+import { budgetRoutes } from './routes/budgets.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -59,6 +60,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/auth' });
   await app.register(categoryRoutes, { prefix: '/categories' });
   await app.register(transactionRoutes, { prefix: '/transactions' });
+  await app.register(budgetRoutes, { prefix: '/budgets' });
   await app.register(aiRoutes, { prefix: '/ai' });
 
   app.setNotFoundHandler((request, reply) => {

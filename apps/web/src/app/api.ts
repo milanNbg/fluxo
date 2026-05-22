@@ -1,9 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type {
-  BaseQueryFn,
-  FetchArgs,
-  FetchBaseQueryError,
-} from '@reduxjs/toolkit/query';
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { Mutex } from 'async-mutex';
 import type {
   HealthCheckResponse,
@@ -20,6 +16,11 @@ import type {
   TransactionListResponse,
   TransactionFilters,
   TransactionStats,
+  BudgetListResponse,
+  BudgetWithStats,
+  CreateBudgetInput,
+  UpdateBudgetInput,
+  BudgetFilters,
 } from '@fluxo/shared';
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
@@ -42,11 +43,11 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-const baseQueryWithReauth: BaseQueryFn<
-  string | FetchArgs,
-  unknown,
-  FetchBaseQueryError
-> = async (args, baseApi, extraOptions) => {
+const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
+  args,
+  baseApi,
+  extraOptions,
+) => {
   await mutex.waitForUnlock();
 
   let result = await baseQuery(args, baseApi, extraOptions);
@@ -97,7 +98,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Health', 'User', 'Transaction', 'Category'],
+  tagTypes: ['Health', 'User', 'Transaction', 'Category', 'Budget'],
   endpoints: (builder) => ({
     getHealth: builder.query<HealthCheckResponse, void>({
       query: () => '/health',
@@ -218,6 +219,43 @@ export const api = createApi({
       query: () => '/ai/suggestions',
     }),
 
+    listBudgets: builder.query<BudgetListResponse, BudgetFilters>({
+      query: (filters) => ({
+        url: '/budgets',
+        params: filters,
+      }),
+      providesTags: ['Budget'],
+    }),
+
+    createBudget: builder.mutation<{ budget: BudgetWithStats }, CreateBudgetInput>({
+      query: (input) => ({
+        url: '/budgets',
+        method: 'POST',
+        body: input,
+      }),
+      invalidatesTags: ['Budget'],
+    }),
+
+    updateBudget: builder.mutation<
+      { budget: BudgetWithStats },
+      { id: string; input: UpdateBudgetInput }
+    >({
+      query: ({ id, input }) => ({
+        url: `/budgets/${id}`,
+        method: 'PATCH',
+        body: input,
+      }),
+      invalidatesTags: ['Budget'],
+    }),
+
+    deleteBudget: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/budgets/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Budget'],
+    }),
+
     listTransactions: builder.query<TransactionListResponse, TransactionFilters>({
       query: (filters) => ({
         url: '/transactions',
@@ -235,10 +273,7 @@ export const api = createApi({
           : [{ type: 'Transaction', id: 'LIST' }],
     }),
 
-    createTransaction: builder.mutation<
-      { transaction: Transaction },
-      CreateTransactionInput
-    >({
+    createTransaction: builder.mutation<{ transaction: Transaction }, CreateTransactionInput>({
       query: (input) => ({
         url: '/transactions',
         method: 'POST',
@@ -297,4 +332,8 @@ export const {
   useDeleteTransactionMutation,
   useGetTransactionStatsQuery,
   useGetSuggestionsQuery,
+  useListBudgetsQuery,
+  useCreateBudgetMutation,
+  useUpdateBudgetMutation,
+  useDeleteBudgetMutation,
 } = api;

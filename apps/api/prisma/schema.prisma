@@ -17,6 +17,7 @@ model User {
   refreshTokens RefreshToken[]
   categories    Category[]
   transactions  Transaction[]
+  budgets       Budget[]
 
   @@index([email])
   @@map("users")
@@ -44,6 +45,7 @@ model Category {
   userId       String        @map("user_id") @db.Uuid
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  budgets      Budget[]
   isDefault    Boolean       @default(false) @map("is_default")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
@@ -77,4 +79,22 @@ enum TransactionType {
   expense
 
   @@map("transaction_type")
+}
+
+model Budget {
+  id         String   @id @default(uuid()) @db.Uuid
+  amount     Decimal  @db.Decimal(12, 2)
+  month      Int      @db.SmallInt
+  year       Int      @db.SmallInt
+  userId     String   @map("user_id") @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String   @map("category_id") @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, categoryId, month, year])
+  @@index([userId, year, month])
+  @@index([categoryId])
+  @@map("budgets")
 }

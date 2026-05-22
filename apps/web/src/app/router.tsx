@@ -4,6 +4,7 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
+import { BudgetsPage } from '@/pages/BudgetsPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { RedirectIfAuthenticated } from '@/features/auth/RedirectIfAuthenticated';
 
@@ -41,6 +42,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <TransactionsPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: '/dashboard/budgets',
+    element: (
+      <RequireAuth>
+        <BudgetsPage />
       </RequireAuth>
     ),
   },
