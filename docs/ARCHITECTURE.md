@@ -165,12 +165,61 @@ This is standard browser security and cannot be disabled — only correctly hand
 
 **Why `pino-pretty` in development:** JSON logs are hard to read in a terminal. `pino-pretty` colorizes and formats them for humans during local development.
 
+## Feature Data Models
+
+### Transactions & Categories
+
+**Ownership model:** Every transaction and category belongs to a user via `userId`. All queries filter by `userId` — there is no code path that returns another user's data. Categories have a `[userId, name]` unique constraint so each user has their own namespace.
+
+**Why `onDelete: Restrict` on transaction → category:** Deleting a category that still has transactions would orphan financial records. The database refuses it, forcing the user to reassign or delete transactions first. Money data should never silently disappear.
+
+### Budgets
+
+**The model:** A budget is a monthly spending limit for one category — `[userId, categoryId, month, year]` with a unique constraint, so you can't accidentally create two budgets for "Food" in the same month.
+
+**Why "spent" is computed, not stored:** The budget row stores only the limit. The amount spent is calculated on read by summing that category's expense transactions within the month (`prisma.transaction.groupBy`). Storing spent would mean updating it on every transaction change — a denormalization bug waiting to happen. Computing keeps it always correct.
+
+**Status thresholds:** `over` at ≥100%, `warning` at ≥80%, `ok` below — surfaced as color-coded progress bars in the UI and as alerts on the dashboard.
+
+### Savings Goals & Contributions
+
+**Why a separate `GoalContribution` table instead of a single "current amount" field:** A goal could store just a number that goes up. Instead, every deposit is its own row with date and optional note. This gives a full audit trail ("how did this goal grow over time?"), enables history display, and keeps the data honest — `currentAmount` is always the sum of real contributions, never a magic number.
+
+**Why goals are separate from transactions:** Saving €200 toward a trip is not an expense — the money isn't gone, it's allocated. Mixing the two would cause double-counting and accounting confusion. Goals are a deliberate, separate tracker, which is how YNAB and Monarch model them too.
+
+**Atomic contributions with `prisma.$transaction`:** Adding a contribution does two writes — insert the contribution row and update the goal's cached `currentAmount` (plus flip status to `completed` if the target is reached). These run inside a database transaction so they succeed or fail together. A contribution can never be recorded without updating the balance, and vice versa.
+
+**Monthly target projection:** If a goal has a deadline, the service computes how much to save per month to finish on time (`remaining / months left`). This turns a static number into actionable advice, surfaced both in the goal card and in the AI assistant's context.
+
+## Mobile-First Responsive Design
+
+**Bottom-sheet / full-screen modals:** On mobile, modals slide up from the bottom and fill the screen (the pattern used by iOS native sheets, Stripe, and Linear); on desktop they center as classic dialogs. A single `Modal` component handles both via Tailwind breakpoints, so feature code never worries about viewport.
+
+**Custom date picker over native `<input type="date">`:** iOS Safari renders empty native date inputs as blank boxes with no placeholder, which looked broken. A `react-day-picker` based component gives a consistent, branded calendar across iOS, Android, and desktop, with the same `yyyy-MM-dd` value contract the backend expects.
+
+**iOS-specific details:** Inputs use 16px font on mobile (`text-base sm:text-sm`) to prevent Safari's auto-zoom on focus, and modals respect `env(safe-area-inset-bottom)` so action buttons clear the iPhone home indicator.
+
+## AI Context Injection
+
+**How the assistant knows your finances:** On every chat request, the backend builds a fresh system prompt containing the user's financial snapshot, current-month budgets (with status), and savings goals (with progress and monthly targets) — all fetched in parallel via `Promise.all`. Claude answers from this real data and is instructed never to invent figures.
+
+**Why rebuild context every request:** Finances change between messages — a new transaction, an updated budget. Rebuilding guarantees the assistant always reasons over current state rather than stale context.
+
+## Production Deployment
+
+**Topology:** Frontend on Vercel, backend on Railway, PostgreSQL on Neon — all on free tiers, all HTTPS.
+
+**The third-party cookie problem:** With frontend and backend on different domains (`*.vercel.app` vs `*.railway.app`), the refresh-token cookie is a third-party cookie, which modern browsers (Chrome 2024+) block by default — so sessions silently broke on refresh in production while working locally.
+
+**The fix — Vercel proxy rewrites:** Instead of calling the Railway URL directly, the frontend calls a relative `/api/*` path. A Vercel rewrite proxies `/api/*` to the Railway backend. Now every request is same-origin from the browser's perspective, the cookie is first-party, and it works — no custom domain required. Production cookies use `sameSite: 'none'` + `secure: true`; local dev keeps `sameSite: 'lax'`.
+
+**Migration discipline:** Database schema changes are applied to Neon with `prisma migrate deploy` (which only applies existing migrations, never resets), separately from pushing code. Applying migrations before deploying code avoids the "table does not exist" production error.
+
 ## What's Next
 
 Future architectural decisions to document as they're made:
-- Transaction and Category data models with ownership constraints
-- Optimistic updates for transaction CRUD
-- Recharts integration for dashboard visualizations
-- AI assistant integration (Anthropic API) with streaming responses
-- Internationalization (i18n) strategy
-- Production deployment (Vercel + Railway/Neon)
+- Recurring transactions (scheduled, auto-created entries)
+- Data export (CSV / JSON) with streaming for large datasets
+- Dark mode via Tailwind's `dark:` variant and a theme toggle
+- Full internationalization (English/Serbian) — currently the AI replies bilingually, but the UI is English-only
+- Charts for goal progress over time (using the contribution history we already store)

@@ -17,7 +17,11 @@
 
 ## ✨ Highlights
 
-🎯 **AI Assistant powered by Claude** — Streaming chat with personalized financial insights based on your actual transaction data
+🎯 **AI Assistant powered by Claude** — Streaming chat with personalized insights based on your transactions, budgets, and savings goals
+
+📊 **Budgets & Goals** — Monthly category budgets with over-limit alerts, and savings goals with contribution history and monthly-target projections
+
+📱 **Fully responsive** — Mobile-first UI with bottom-sheet modals, slide-in navigation, and a custom date picker
 
 🔐 **Production-grade authentication** — JWT access tokens, HTTP-only refresh cookies, automatic rotation, rate limiting, Argon2id password hashing
 
@@ -56,6 +60,18 @@ Live financial overview with category breakdown, monthly trends, and recent acti
 
 ![Dashboard](./docs/screenshots/02-dashboard.png)
 
+### 📊 Budgets — Monthly Limits with Live Status
+
+Set spending limits per category and track progress with color-coded status — on track (green), getting close (yellow), or over budget (red). Switch between months to review history.
+
+![Budgets](./docs/screenshots/07-budgets.png)
+
+### 🎯 Savings Goals — Progress with Contribution History
+
+Track savings goals with target amounts and optional deadlines. Each contribution is logged with full history, and goals with a deadline show how much to save per month to finish on time.
+
+![Goals](./docs/screenshots/08-goals.png)
+
 ### 💬 AI Assistant Welcome Screen
 
 Personalized greeting with suggested questions to help users get started.
@@ -91,6 +107,8 @@ Production-grade auth with JWT access tokens and HTTP-only refresh cookies.
 - **Tailwind CSS 4** (Oxide engine) for styling
 - **React Router 7** for routing
 - **React Markdown** for AI response rendering
+- **React Hook Form + Zod** for type-safe forms
+- **react-day-picker + date-fns** for the custom date picker
 - **Async Mutex** for token refresh synchronization
 
 ### Backend
@@ -115,20 +133,20 @@ Production-grade auth with JWT access tokens and HTTP-only refresh cookies.
 - **Full Authentication** — Register, login, logout with automatic token refresh and rotation
 - **Transaction CRUD** — Create, edit, delete with category assignment and confirmation dialogs
 - **Smart Filtering** — Search with debouncing, type filter, date range, category filter, pagination
-- **Dashboard Analytics** — Real-time stats, category breakdown with percentages, recent transactions widget
-- **AI Assistant** — Streaming Server-Sent Events chat with Claude, user-context injection (transactions + stats), conversation history, markdown rendering
+- **Dashboard Analytics** — Real-time stats, category breakdown with percentages, recent transactions and budget-alert widgets
+- **Budgets** — Monthly spending limits per category with live progress bars, status colors (on track / warning / over), and a month switcher
+- **Savings Goals** — Target amounts with optional deadlines, contribution history (atomic updates), auto-completion, and "save €X/month to reach your goal on time" projections
+- **AI Assistant** — Streaming Server-Sent Events chat with Claude, context injection from transactions, budgets, and goals; conversation history; markdown rendering; bilingual (English/Serbian)
 - **Multi-tenant Security** — Ownership checks on all resources, RTK Query cache reset on auth changes
+- **Mobile Responsive** — Full-screen modals on mobile, hamburger navigation drawer, custom branded date picker, safe-area support for iOS
 - **Default Categories** — Auto-seeded on registration for new users
-- **Migration Support** — Script to backfill default categories for existing users
 
 ### Planned 🔜
 
-- Budget tracking with category limits and alerts
-- Savings goals with progress visualization
 - Recurring transactions
 - Data export (CSV, JSON)
 - Dark mode
-- Internationalization (English/Serbian)
+- Full internationalization (English/Serbian UI)
 
 ---
 
@@ -143,6 +161,8 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detailed technology decis
 - **Token refresh mutex** to prevent race conditions during simultaneous 401s
 - **Server-Sent Events (SSE)** for AI streaming with `AbortController` for cancellation
 - **Adapter pattern in Prisma 7** for future edge deployment compatibility
+- **Atomic database transactions** (`prisma.$transaction`) for goal contributions — contribution insert and balance update succeed or fail together
+- **Vercel proxy rewrites** to serve same-origin API requests, solving third-party cookie blocking in production
 
 ---
 
@@ -212,7 +232,7 @@ fluxo/
 │   │   ├── src/
 │   │   │   ├── app/         # Redux store, RTK Query API
 │   │   │   ├── components/  # Shared components
-│   │   │   ├── features/    # Feature modules (auth, transactions, ai)
+│   │   │   ├── features/    # Feature modules (auth, transactions, budgets, goals, ai, dashboard)
 │   │   │   └── pages/       # Route pages
 │   │   └── ...
 │   └── api/                 # Fastify backend
