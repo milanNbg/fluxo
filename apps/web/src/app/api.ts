@@ -21,6 +21,10 @@ import type {
   CreateBudgetInput,
   UpdateBudgetInput,
   BudgetFilters,
+  GoalWithStats,
+  CreateGoalInput,
+  UpdateGoalInput,
+  CreateContributionInput,
 } from '@fluxo/shared';
 import { setCredentials, clearCredentials } from '@/features/auth/authSlice';
 import type { RootState } from './store';
@@ -98,7 +102,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Health', 'User', 'Transaction', 'Category', 'Budget'],
+  tagTypes: ['Health', 'User', 'Transaction', 'Category', 'Budget', 'Goal'],
   endpoints: (builder) => ({
     getHealth: builder.query<HealthCheckResponse, void>({
       query: () => '/health',
@@ -256,6 +260,60 @@ export const api = createApi({
       invalidatesTags: ['Budget'],
     }),
 
+    listGoals: builder.query<{ goals: GoalWithStats[] }, void>({
+      query: () => '/goals',
+      providesTags: ['Goal'],
+    }),
+
+    createGoal: builder.mutation<{ goal: GoalWithStats }, CreateGoalInput>({
+      query: (input) => ({
+        url: '/goals',
+        method: 'POST',
+        body: input,
+      }),
+      invalidatesTags: ['Goal'],
+    }),
+
+    updateGoal: builder.mutation<{ goal: GoalWithStats }, { id: string; input: UpdateGoalInput }>({
+      query: ({ id, input }) => ({
+        url: `/goals/${id}`,
+        method: 'PATCH',
+        body: input,
+      }),
+      invalidatesTags: ['Goal'],
+    }),
+
+    deleteGoal: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/goals/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Goal'],
+    }),
+
+    addContribution: builder.mutation<
+      { goal: GoalWithStats },
+      { goalId: string; input: CreateContributionInput }
+    >({
+      query: ({ goalId, input }) => ({
+        url: `/goals/${goalId}/contributions`,
+        method: 'POST',
+        body: input,
+      }),
+      invalidatesTags: ['Goal'],
+    }),
+
+    deleteContribution: builder.mutation<
+      { goal: GoalWithStats },
+      { goalId: string; contributionId: string }
+    >({
+      query: ({ goalId, contributionId }) => ({
+        url: `/goals/${goalId}/contributions/${contributionId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Goal'],
+    }),
+
     listTransactions: builder.query<TransactionListResponse, TransactionFilters>({
       query: (filters) => ({
         url: '/transactions',
@@ -336,4 +394,10 @@ export const {
   useCreateBudgetMutation,
   useUpdateBudgetMutation,
   useDeleteBudgetMutation,
+  useListGoalsQuery,
+  useCreateGoalMutation,
+  useUpdateGoalMutation,
+  useDeleteGoalMutation,
+  useAddContributionMutation,
+  useDeleteContributionMutation,
 } = api;

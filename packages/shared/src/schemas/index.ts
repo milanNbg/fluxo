@@ -3,3 +3,4 @@ export * from './user.js';
 export * from './transaction.js';
 export * from './chat.js';
 export * from './budget.js';
+export * from './goal.js';
