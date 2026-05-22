@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { StatCard } from '@/components/StatCard';
 import { RecentTransactions } from '@/features/dashboard/RecentTransactions';
 import { CategoryBreakdown } from '@/features/dashboard/CategoryBreakdown';
+import { BudgetAlerts } from '@/features/dashboard/BudgetAlerts';
 
 function formatAmount(value: string): string {
   const num = Number.parseFloat(value);
@@ -93,6 +94,10 @@ export function DashboardPage() {
                 : 'Start tracking your finances'
             }
           />
+        </div>
+
+        <div className="mb-6">
+          <BudgetAlerts />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
