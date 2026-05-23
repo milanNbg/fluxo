@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { notify } from '@/lib/toast';
 import type { BudgetWithStats } from '@fluxo/shared';
 import { useListBudgetsQuery, useDeleteBudgetMutation } from '@/app/api';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -58,8 +59,9 @@ export function BudgetsPage() {
     try {
       await deleteBudget(deleting.id).unwrap();
       setDeleting(null);
-    } catch {
-      // Error handling could use toast later
+      notify.success('Budget deleted');
+    } catch (err) {
+      notify.apiError(err, 'Failed to delete budget');
     }
   };
 

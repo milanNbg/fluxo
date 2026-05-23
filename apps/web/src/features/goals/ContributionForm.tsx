@@ -1,5 +1,6 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/toast';
 import { z } from 'zod';
 import { useAddContributionMutation } from '@/app/api';
 import { Input } from '@/components/Input';
@@ -61,6 +62,7 @@ export function ContributionForm({ goalId, onSuccess, onCancel }: ContributionFo
           note: data.note || undefined,
         },
       }).unwrap();
+      notify.success('Contribution added');
       onSuccess();
     } catch {
       // Error displayed via RTK Query state

@@ -1,5 +1,6 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/toast';
 import { z } from 'zod';
 import { transactionTypeSchema, type Transaction } from '@fluxo/shared';
 import {
@@ -101,6 +102,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
           categoryId: data.categoryId,
         }).unwrap();
       }
+      notify.success(isEditMode ? 'Transaction updated' : 'Transaction added');
       onSuccess();
     } catch {
       // Error displayed via RTK Query state

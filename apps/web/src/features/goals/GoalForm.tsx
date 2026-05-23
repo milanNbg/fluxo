@@ -1,5 +1,6 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/toast';
 import { z } from 'zod';
 import type { GoalWithStats } from '@fluxo/shared';
 import { useCreateGoalMutation, useUpdateGoalMutation } from '@/app/api';
@@ -77,6 +78,7 @@ export function GoalForm({ goal, onSuccess, onCancel }: GoalFormProps) {
       } else {
         await createGoal(payload).unwrap();
       }
+      notify.success(isEditMode ? 'Goal updated' : 'Goal created');
       onSuccess();
     } catch {
       // Error displayed via RTK Query state

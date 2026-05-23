@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { notify } from '@/lib/toast';
 import type { Transaction } from '@fluxo/shared';
 import {
   useListTransactionsQuery,
@@ -70,9 +71,10 @@ export function TransactionsPage() {
     if (!deletingTransaction) return;
     try {
       await deleteTransaction(deletingTransaction.id).unwrap();
+      notify.success('Transaction deleted');
       closeDeleteDialog();
-    } catch {
-      // Error handling could be improved with toast notifications later
+    } catch (err) {
+      notify.apiError(err, 'Failed to delete transaction');
     }
   };
 

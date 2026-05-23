@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/toast';
 import { z } from 'zod';
 import type { BudgetWithStats } from '@fluxo/shared';
 import {
@@ -81,6 +82,7 @@ export function BudgetForm({ budget, month, year, onSuccess, onCancel }: BudgetF
           year,
         }).unwrap();
       }
+      notify.success(isEditMode ? 'Budget updated' : 'Budget created');
       onSuccess();
     } catch {
       // Error displayed via RTK Query state

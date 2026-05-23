@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { notify } from '@/lib/toast';
 import type { GoalWithStats } from '@fluxo/shared';
 import { useListGoalsQuery, useDeleteGoalMutation } from '@/app/api';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -24,8 +25,9 @@ export function GoalsPage() {
     try {
       await deleteGoal(deleting.id).unwrap();
       setDeleting(null);
-    } catch {
-      // Could add toast later
+      notify.success('Goal deleted');
+    } catch (err) {
+      notify.apiError(err, 'Failed to delete goal');
     }
   };
 
