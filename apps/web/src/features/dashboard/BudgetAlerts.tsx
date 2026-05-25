@@ -15,24 +15,8 @@ export function BudgetAlerts() {
   // No budgets at all → don't render
   if (data.budgets.length === 0) return null;
 
-  // All on track → positive message
-  if (alerts.length === 0) {
-    return (
-      <div className="rounded-xl border border-success/20 bg-success/5 p-4 sm:p-5">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl" aria-hidden="true">
-            ✅
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900">All budgets on track</h3>
-            <p className="text-xs text-gray-600">
-              You're within your limits this month. Keep it up!
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // All on track → no alert needed (absence of alerts is the message)
+  if (alerts.length === 0) return null;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
