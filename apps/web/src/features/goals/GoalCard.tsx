@@ -1,5 +1,6 @@
 import type { GoalWithStats } from '@fluxo/shared';
 import { Button } from '@/components/Button';
+import { GoalProgressChart } from './GoalProgressChart';
 
 interface GoalCardProps {
   goal: GoalWithStats;
@@ -126,7 +127,14 @@ export function GoalCard({ goal, onAddContribution, onEdit, onDelete }: GoalCard
             {goal.contributions.length} contribution
             {goal.contributions.length > 1 ? 's' : ''}
           </summary>
-          <ul className="mt-2 space-y-1">
+
+          <GoalProgressChart
+            contributions={goal.contributions}
+            targetAmount={goal.targetAmount}
+            color={goal.color}
+          />
+
+          <ul className="mt-3 space-y-1">
             {goal.contributions.map((c) => (
               <li key={c.id} className="flex items-center justify-between text-xs text-gray-600">
                 <span>
